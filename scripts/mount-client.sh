@@ -58,6 +58,7 @@ mount -t tmpfs tmpfs "$mount/tmp" || panic
 
 if [[ $sync == 1 ]]; then
     rsync -aP /var/db/repos/gentoo "$mount/var/db/repos/" || panic
+    emerge --sync
 fi
 chroot "$mount" $(awk -F: -v user="root" '$1 == user {print $NF}' "$mount/etc/passwd") || panic
 
