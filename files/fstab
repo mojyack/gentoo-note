@@ -1,0 +1,2 @@
+UUID=$UUID / ext4 rw,relatime,barrier=0 0 1
+/swapfile none swap defaults 0 0

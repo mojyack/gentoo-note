@@ -1,0 +1,3 @@
+[submodule "scripts/module-diff/kernel-module-name"]
+	path = scripts/module-diff/kernel-module-name
+	url = https://github.com/johnlinp/kernel-module-name

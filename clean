@@ -1,0 +1,3 @@
+eclean-kernel -a
+eclean-pkg -d
+elcean-dist -d

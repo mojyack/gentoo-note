@@ -1,0 +1,10 @@
+192.168.11.1    solomon
+192.168.11.2    solomon-wireless
+192.168.11.3    chloe
+192.168.11.4    chloe-wireless
+192.168.11.5    cindy
+192.168.11.6    cindy-wireless
+
+
+127.0.0.1       localhost
+::1             localhost

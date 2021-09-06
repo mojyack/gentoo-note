@@ -1,0 +1,3 @@
+post_pkg_postinst () {
+    bootctl --path /boot install
+}

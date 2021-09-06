@@ -1,0 +1,3 @@
+gcc-config --list-profiles
+gcc-config N
+emerge -a1 --usepkg=n sys-devel/libtool

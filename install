@@ -1,0 +1,191 @@
+# set root password in order to login with ssh
+passwd root
+rc-service sshd start
+# set TERMINFO
+export TERM=xterm-256color
+
+# initialize disk
+scripts/init-disk.sh {--legacy} ${DEVICE} # for DEVICE, check $(lsblk)
+
+mount ${ROOT} /mnt/gentoo
+
+# reset rtc
+ntpd -q -g
+
+# unpack stage3
+# for url, check "http://ftp.iij.ad.jp/pub/linux/gentoo/releases/amd64/autobuilds/current-stage3-amd64-nomultilib-systemd/"
+curl -O ${ARCHIVE_URL}
+tar xpvf stage3-*.tar.xz --xattrs-include='*.*' --numeric-owner -C /mnt/gentoo
+
+# chroot
+# before chroot:
+    # ensure that you copied us to new root filesystem
+    # find witch firmware are loaded and copy them to /lib/firmware
+cp --dereference /etc/resolv.conf /mnt/gentoo/etc/
+mount --types proc /proc /mnt/gentoo/proc
+mount --rbind /sys /mnt/gentoo/sys
+mount --make-rslave /mnt/gentoo/sys
+mount --rbind /dev /mnt/gentoo/dev
+mount --make-rslave /mnt/gentoo/dev
+# if you want to use systemd-resolved in chroot:
+    mount --rbind /run /mnt/gentoo/run
+chroot /mnt/gentoo /bin/bash
+# if you created boot partition:
+    mount ${BOOT} /boot
+
+# setup /etc/fstab
+# swapfile
+fallocate -l 8G /swapfile
+chmod 600 /swapfile
+mkswap /swapfile
+# fstab
+cp files/fstab /etc/fstab
+# edit $UUID in fstab, check $(blkid)
+
+# setup /etc
+mkdir -p /etc/polkit-1/rules.d
+cp files/40-wheel.rules /etc/polkit-1/rules.d/
+cp files/hosts /etc/hosts
+cp files/issue /etc/issue
+cp files/doas.conf /etc/doas.conf
+mkdir /etc/zsh
+cp files/zshenv /etc/zsh/
+rm /etc/localtime
+ln -s ../usr/share/zoneinfo/Asia/Tokyo /etc/localtime
+cp files/locale.gen /etc/
+locale-gen
+eselect locale set en_US.UTF-8
+env-update
+# choose hostname
+echo "" > /etc/hostname
+# if you want to use distcc:
+    cp files/distcc-hosts /etc/distcc/hosts
+# if your computer uses legacy-boot:
+    cp files/grub /etc/default/grub
+# if your computer is nfs-client:
+    cp files/exports
+# if your computer does not have wireless network adaptor, delete network/25-wireless.network
+# and edit "Name" in /etc/systemd/network/*
+cp -r files/network/* /etc/systemd/network/
+
+# setup portage
+rm -rf /etc/portage
+cp -r files/portage /etc/portage
+# edit make.conf
+    # edit MAKEOPTS
+    # edit VIDEO_CARDS, see "https://wiki.gentoo.org/wiki/Intel" and "https://wiki.gentoo.org/wiki/AMDGPU"
+    # if you want to use distcc:
+        # replace "-march=native" in "COMMON_FLAGS" with $(scripts/distccflags -march=native)
+        # replace "--target-cpu=native" as same
+        # append "distcc" to FEATURES
+    # if your computer has a lot of memory:
+        # append this line PORTAGE_TMPDIR="/tmp"
+    # if you want vaapi, add "vaapi" to USE variable
+# config layman
+    cp files/layman /etc/
+    mkdir /var/db/repos/layman
+
+# install proper firmwares
+
+# install systemd-boot
+mkdir -p /etc/portage/env/sys-apps/systemd
+cp files/systemd-boot /etc/portage/env/sys-apps/systemd/
+cp files/update-systemd-boot-entry /etc/kernel/postinst.d/
+chmod u+x /etc/kernel/postinst.d/update-systemd-boot-entry
+# replace ${UUID} with !!!PARTUUID!!! in blkid
+nano /etc/kernel/postinst.d/update-systemd-boot-entry
+# add "sys-apps/systemd gnuefi" to package.use
+
+# install system and preset
+emerge-webrsync
+emerge --sync
+# if there are news:
+    eselect news read
+    eselect news purge
+emerge -a1 dev-vcs/git app-portage/cpuid2cpuflags
+# add CPU_FLAGS_X86="" to make.conf according to cpuid2cpuflags
+# then, you can purge app-portage/cpuid2cpuflags
+rm -rf /etc/portage/repos.conf
+mv /etc/portage/repos.conf.0 /etc/portage/repos.conf
+# if your computer is a local client:
+    cp files/gentoo.conf /etc/portage/repos.conf/
+emerge --sync
+# select profile
+eselect profile set local:stripped-system
+# update system
+# memo:
+    # USE="-crypt" emerge -1avu glibc libxcrypt virtual/libcrypt
+emerge -avuDN @world
+# select gcc version
+# install ovarlay
+emerge -a app-portage/layman
+mkdir /var/db/repos/layman
+layman -L
+layman -a gentoo-zh # for fcitx5
+# install preset
+emerge -avuDN @preset
+emerge -aD --depclean
+dispatch-conf
+# if you use systemd-boot:
+    emerge -a sys-libs/efivar
+
+# disable systemwide zsh profile
+mv /etc/zsh/zprofile /etc/zsh/zprofile.bak
+
+# build and install kernel
+# configuration is up to you
+# scripts/distccflags may help you
+cd /usr/src/linux
+make oldconfig
+make nconfig
+make -j24 && make modules_install && make install
+
+# install grub
+emerge sys-boot/grub:2
+cp files/grub /etc/default/grub
+echo "sys-boot/grub grub.conf" >> /etc/portage/package.env
+echo "GRUB_PLATFORMS=\"pc\"" >> /etc/portage/env/grub.conf
+grub-install ${DEVICE}
+
+# install systemd-boot
+bootctl --path /boot install
+
+# install wifi
+emerge net-wireless/iwd
+systemctl enable iwd
+# wifi settings are stored in /var/lib/iwd. copy them from another machine.
+
+# enable services
+systemctl enable systemd-networkd
+systemctl enable systemd-resolved
+systemctl enable sshd
+systemctl enable fstrim.timer
+# if you installed iwd
+systemctl enable iwd
+
+# link /etc/resolv.conf for systemd-resolved
+rm /etc/resolv.conf
+ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf
+
+# set root password
+passwd root
+chsh -s /bin/zsh
+
+# reboot
+exit
+umount -l /mnt/gentoo/dev
+umount -R /mnt/gentoo/boot
+umount -R /mnt/gentoo
+reboot
+
+# add normal user
+useradd -d /home/mojyack -s /bin/zsh -m mojyack
+passwd mojyack
+usermod -aG wheel mojyack
+
+# if your computer is a local server:
+    cp files/rsyncd.conf /etc/
+    systemctl start rsyncd.service --now
+
+# firefox compact mode
+about:config/browser.compactmode.show
