@@ -91,7 +91,6 @@ cp -r files/portage /etc/portage
 mkdir -p /etc/portage/env/sys-apps/systemd
 cp files/systemd-boot /etc/portage/env/sys-apps/systemd/
 cp files/update-systemd-boot-entry /etc/kernel/postinst.d/
-chmod u+x /etc/kernel/postinst.d/update-systemd-boot-entry
 # replace ${UUID} with !!!PARTUUID!!! in blkid
 nano /etc/kernel/postinst.d/update-systemd-boot-entry
 # add "sys-apps/systemd gnuefi" to package.use
@@ -143,6 +142,7 @@ make -j24 && make modules_install && make install
 # install grub
 emerge sys-boot/grub:2
 cp files/grub /etc/default/grub
+cp files/update-grub /etc/kernel/postinst.d/
 echo "sys-boot/grub grub.conf" >> /etc/portage/package.env
 echo "GRUB_PLATFORMS=\"pc\"" >> /etc/portage/env/grub.conf
 grub-install ${DEVICE}
