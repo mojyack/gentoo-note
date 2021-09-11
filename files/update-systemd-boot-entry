@@ -4,7 +4,7 @@ ROOTFS=PARTUUID=${UUID}
 CMDLINE="rw quiet loglevel=3 mitigations=off fsck.mode=skip nowatchdog"
 KERNEL=/usr/src/linux
 
-ENTRY_NAME=Gentoo Linux
+ENTRY_NAME="Gentoo Linux"
 BOOT_CONF=gentoo.conf
 OLD_BOOT_CONF=gentoo.conf.old
 
