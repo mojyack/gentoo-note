@@ -48,6 +48,7 @@ cp files/40-wheel.rules /etc/polkit-1/rules.d/
 cp files/hosts /etc/hosts
 cp files/issue /etc/issue
 cp files/doas.conf /etc/doas.conf
+cp files/50-coredump.conf /etc/sysctl.d/50-coredump.conf
 mkdir /etc/zsh
 cp files/zshenv /etc/zsh/
 rm /etc/localtime
