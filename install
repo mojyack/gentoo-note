@@ -88,14 +88,6 @@ cp -r files/portage /etc/portage
 
 # install proper firmwares
 
-# install systemd-boot
-mkdir -p /etc/portage/env/sys-apps/systemd
-cp files/systemd-boot /etc/portage/env/sys-apps/systemd/
-cp files/update-systemd-boot-entry /etc/kernel/postinst.d/
-# replace ${UUID} with !!!PARTUUID!!! in blkid
-nano /etc/kernel/postinst.d/update-systemd-boot-entry
-# add "sys-apps/systemd gnuefi" to package.use
-
 # install system and preset
 emerge-webrsync
 emerge --sync
@@ -126,8 +118,9 @@ layman -a gentoo-zh # for fcitx5
 emerge -avuDN @preset
 emerge -aD --depclean
 dispatch-conf
-# if you use systemd-boot:
+# if you use uefi:
     emerge -a sys-libs/efivar
+    emerge -a sys-boot/efibootmgr
 
 # disable systemwide zsh profile
 mv /etc/zsh/zprofile /etc/zsh/zprofile.bak
@@ -138,7 +131,11 @@ mv /etc/zsh/zprofile /etc/zsh/zprofile.bak
 cd /usr/src/linux
 make oldconfig
 make nconfig
-make -j24 && make modules_install && make install
+# compile kernel with scripts/genkernel
+
+# setup efi menu
+# ${DISK_NAME} e.g. nvme0n1, sda
+efibootmgr -c -L "Gentoo" -l '\EFI\Linux\vmlinuz' -d /dev/${DISK_NAME} 
 
 # install grub
 emerge sys-boot/grub:2
@@ -147,9 +144,6 @@ cp files/update-grub /etc/kernel/postinst.d/
 echo "sys-boot/grub grub.conf" >> /etc/portage/package.env
 echo "GRUB_PLATFORMS=\"pc\"" >> /etc/portage/env/grub.conf
 grub-install ${DEVICE}
-
-# install systemd-boot
-bootctl --path /boot install
 
 # install wifi
 emerge net-wireless/iwd
