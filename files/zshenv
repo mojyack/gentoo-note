@@ -11,7 +11,7 @@ if [[ -z "$XDG_CONFIG_HOME" ]] {
 }
 
 if [[ -d "$XDG_CONFIG_HOME/zsh" ]] {
-    export ZDOTDIR="$XDG_CONFIG_HOME/zsh/"
+    export ZDOTDIR="$XDG_CONFIG_HOME/zsh"
 }
 
 if [[ -z "$XDG_DATA_HOME" ]] {
