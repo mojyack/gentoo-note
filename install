@@ -82,9 +82,6 @@ cp -r files/portage /etc/portage
     # if your computer has a lot of memory:
         # append this line PORTAGE_TMPDIR="/tmp"
     # if you want vaapi, add "vaapi" to USE variable
-# config layman
-    cp files/layman /etc/
-    mkdir /var/db/repos/layman
 
 # install proper firmwares
 
@@ -110,10 +107,9 @@ eselect profile set local:stripped-system
 emerge -avuDN @world
 # select gcc version
 # install ovarlay
-emerge -a app-portage/layman
-mkdir /var/db/repos/layman
-layman -L
-layman -a gentoo-zh # for fcitx5
+emerge -a app-eselect/eselect-repository
+mkdir -p /etc/portage/repos.conf
+eselect repository enable gentoo-zh # for fcitx5
 # install preset
 emerge -avuDN @preset
 emerge -aD --depclean
