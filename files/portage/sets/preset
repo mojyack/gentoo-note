@@ -1,5 +1,4 @@
 app-admin/doas
-app-admin/eclean-kernel
 app-editors/neovim
 app-i18n/fcitx5
 app-i18n/fcitx5-gtk
@@ -26,8 +25,6 @@ net-analyzer/iftop
 sys-apps/kexec-tools
 sys-apps/pciutils
 sys-apps/usbutils
-sys-devel/gcc
-sys-devel/gdb
 sys-kernel/gentoo-sources
 www-client/firefox
 x11-themes/gnome-themes-standard
