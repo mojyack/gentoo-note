@@ -10,28 +10,12 @@ if (( $UID != 0 )); then
     exit 1
 fi
 
-panic() {
-    echo "panic!"
-    exit 1
+try() {
+    $@ || { echo "panic at command \"$@\""; exit 1; }
 }
 
-sync=0
-while [[ $# -gt 0 ]]; do
-    case "$1" in
-        -s|--sync)
-            sync=1
-            shift
-            ;;
-        *)
-            if [[ -z ${client+x} ]]; then
-                client="$1"
-            elif [[ -z ${mount+x} ]]; then
-                mount="$1"
-            fi
-            shift
-            ;;
-    esac
-done
+client="$1"
+mount="$2"
 
 boot=0
 showmount -e "$client" --no-headers | while read e; do
@@ -47,23 +31,18 @@ if [[ $boot == 1 ]]; then
     mount -t nfs4 "$client":/boot "$mount/boot" || panic
 fi
 
-mount --types proc /proc "$mount/proc" || panic
-mount --rbind /sys "$mount/sys" || panic
-mount --make-rslave "$mount/sys" || panic
-mount --rbind /dev "$mount/dev" || panic
-mount --make-rslave "$mount/dev" || panic
-mount --rbind /run "$mount/run" || panic
-mount --make-rslave "$mount/run" || panic
-mount -t tmpfs tmpfs "$mount/tmp" || panic
+try mount --types proc /proc "$mount/proc"
+try mount --rbind /sys "$mount/sys"
+try mount --make-rslave "$mount/sys"
+try mount --rbind /dev "$mount/dev"
+try mount --make-rslave "$mount/dev"
+try mount --rbind /run "$mount/run"
+try mount --make-rslave "$mount/run"
+try mount -t tmpfs tmpfs "$mount/tmp"
 
-if [[ $sync == 1 ]]; then
-    rsync -a /var/db/repos/gentoo "$mount/var/db/repos/" || panic
-    emerge --sync
-fi
-chroot "$mount" $(awk -F: -v user="root" '$1 == user {print $NF}' "$mount/etc/passwd") || panic
+chroot "$mount" $(awk -F: -v user="root" '$1 == user {print $NF}' "$mount/etc/passwd")
 
-umount -l "$mount/dev" || panic
 if [[ $boot == 1 ]]; then
-    umount -R "$mount/boot" || panic
+    try umount -R "$mount/boot"
 fi
-umount -R "$mount" || panic
+try umount -R "$mount"

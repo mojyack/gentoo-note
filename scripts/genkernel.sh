@@ -4,6 +4,9 @@ try() {
     $@ || { echo "genkernel: panic at command \"$@\""; exit 1; }
 }
 
+CC=clang
+CXX=clang++
+
 try make -j24
 try make modules_install
 try depmod $(echo "${PWD##*/}" | cut -d - -f 2-)
