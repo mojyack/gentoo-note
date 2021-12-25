@@ -71,31 +71,25 @@ cp -r files/network/* /etc/systemd/network/
 
 # setup portage
 rm -rf /etc/portage
-cp -r files/portage /etc/portage
+# clone "https://github.com/mojyack/etc-portage" to /etc/portage
 # edit make.conf
     # edit MAKEOPTS
     # edit VIDEO_CARDS, see "https://wiki.gentoo.org/wiki/Intel" and "https://wiki.gentoo.org/wiki/AMDGPU"
-    # if you want to use distcc:
-        # replace "-march=native" in "COMMON_FLAGS" with $(scripts/distccflags -march=native)
-        # replace "--target-cpu=native" as same
-        # append "distcc" to FEATURES
-    # if your computer has a lot of memory:
-        # append this line PORTAGE_TMPDIR="/tmp"
-    # if you want vaapi, add "vaapi" to USE variable
+# set optimize flags
+    # edit "/etc/portage/*.in", see $(scripts/distccflags -march=native)
+# before first sync, backup /etc/portage/repos.conf and copy files/repos.conf to there
 
 # install proper firmwares
 
 # install system and preset
-emerge-webrsync
 emerge --sync
 # if there are news:
     eselect news read
     eselect news purge
 emerge -a1 dev-vcs/git app-portage/cpuid2cpuflags
-# add CPU_FLAGS_X86="" to make.conf according to cpuid2cpuflags
+# edit CPU_FLAGS_X86 in /etc/portage/make.conf according to cpuid2cpuflags
 # then, you can purge app-portage/cpuid2cpuflags
-rm -rf /etc/portage/repos.conf
-mv /etc/portage/repos.conf.0 /etc/portage/repos.conf
+# restore original /etc/portage/repos.conf
 # if your computer is a local client:
     cp files/gentoo.conf /etc/portage/repos.conf/
 emerge --sync
