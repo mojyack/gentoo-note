@@ -39,6 +39,7 @@ try mount --make-rslave "$mount/dev"
 try mount --rbind /run "$mount/run"
 try mount --make-rslave "$mount/run"
 try mount -t tmpfs tmpfs "$mount/tmp"
+try mount -o bind /var/cache/distfiles "$mount/var/cache/distfiles"
 
 chroot "$mount" $(awk -F: -v user="root" '$1 == user {print $NF}' "$mount/etc/passwd")
 
