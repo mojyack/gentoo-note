@@ -26,9 +26,9 @@ showmount -e "$client" --no-headers | while read e; do
     fi
 done
 
-mount -t nfs4 "$client":/ "$mount" || panic
+try mount -t nfs4 "$client":/ "$mount"
 if [[ $boot == 1 ]]; then
-    mount -t nfs4 "$client":/boot "$mount/boot" || panic
+    try mount -t nfs4 "$client":/boot "$mount/boot"
 fi
 
 try mount --types proc /proc "$mount/proc"
