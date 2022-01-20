@@ -43,8 +43,6 @@ cp files/fstab /etc/fstab
 # edit $UUID in fstab, check $(blkid)
 
 # setup /etc
-mkdir -p /etc/polkit-1/rules.d
-cp files/40-wheel.rules /etc/polkit-1/rules.d/
 cp files/hosts /etc/hosts
 cp files/issue /etc/issue
 cp files/doas.conf /etc/doas.conf
