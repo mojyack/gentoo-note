@@ -1,6 +1,6 @@
 #!/bin/zsh
 
-if (( $# < 2 )); then
+if (( $# < 1 )); then
     echo "too few arguments"
     exit 1
 fi
@@ -15,7 +15,7 @@ try() {
 }
 
 client="$1"
-mount="$2"
+mount="/mnt/$client"
 
 boot=0
 showmount -e "$client" --no-headers | while read e; do
@@ -26,6 +26,7 @@ showmount -e "$client" --no-headers | while read e; do
     fi
 done
 
+try mkdir "$mount"
 try mount -t nfs4 "$client":/ "$mount"
 if [[ $boot == 1 ]]; then
     try mount -t nfs4 "$client":/boot "$mount/boot"
@@ -47,3 +48,4 @@ if [[ $boot == 1 ]]; then
     try umount -R "$mount/boot"
 fi
 try umount -R "$mount"
+try rmdir "$mount"
