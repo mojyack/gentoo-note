@@ -27,8 +27,8 @@ else
     sgdisk -n 1:0:+256M -t 1:ef00 -c 1:"EFI System" $1
     sgdisk -n 2:0: -t 2:8300 -c 2:"Linux filesystem" $1
 
-    part_boot = $(partdev $1 2)
-    part_root = $(partdev $1 3)
+    part_boot=$(partdev $1 2)
+    part_root=$(partdev $1 3)
     mkfs.vfat -F32 $part_boot 
     mkfs.ext4 -m 0 $part_root 
 fi
