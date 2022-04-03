@@ -1,21 +1,22 @@
 #!/bin/zsh
 
-if (( $# < 1 )); then
+if (( $# < 1 )) {
     echo "too few arguments"
     exit 1
-fi
+}
 
-if (( $UID != 0 )); then
+if (( $UID != 0 )) {
     echo "please run as root"
     exit 1
-fi
+}
 
 try() {
     $@ || { echo "panic at command \"$@\""; exit 1; }
 }
 
 client="$1"
-mount="/mnt/$client"
+mount_root="/tmp/mnt"
+mount="$mount_root/$client"
 
 boot=0
 showmount -e "$client" --no-headers | while read e; do
@@ -26,11 +27,11 @@ showmount -e "$client" --no-headers | while read e; do
     fi
 done
 
-try mkdir "$mount"
+try mkdir -p "$mount"
 try mount -t nfs4 "$client":/ "$mount"
-if [[ $boot == 1 ]]; then
+if [[ $boot == 1 ]] {
     try mount -t nfs4 "$client":/boot "$mount/boot"
-fi
+}
 
 try mount --types proc /proc "$mount/proc"
 try mount --rbind /sys "$mount/sys"
@@ -49,3 +50,6 @@ if [[ $boot == 1 ]]; then
 fi
 try umount -R "$mount"
 try rmdir "$mount"
+if [[ -z "$(ls -A "$mount_root")" ]] {
+    try rmdir "$mount_root"
+}
