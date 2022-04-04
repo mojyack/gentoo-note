@@ -3,7 +3,7 @@
 192.168.11.3    chloe
 192.168.11.4    chloe-wireless
 192.168.11.5    cindy
-192.168.11.6    cindy-wireless
+192.168.11.64   usb1
 
 
 127.0.0.1       localhost
