@@ -35,9 +35,9 @@ if [[ $boot == 1 ]] {
 
 "${0:a:h}/chroot.sh" "$mount" root
 
-if [[ $boot == 1 ]]; then
+if [[ $boot == 1 ]] {
     try umount -R "$mount/boot"
-fi
+}
 try umount -R "$mount"
 try rmdir "$mount"
 if [[ -z "$(ls -A "$mount_root")" ]] {

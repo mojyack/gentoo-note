@@ -25,6 +25,10 @@ try mount --make-rslave "$root/dev"
 try mount --rbind /run "$root/run"
 try mount --make-rslave "$root/run"
 try mount -t tmpfs tmpfs "$root/tmp"
+
+# optional
+try rsync -a -P --remove-source-files "$root/var/cache/distfiles/" /var/cache/distfiles/
 try mount -o bind /var/cache/distfiles "$root/var/cache/distfiles"
+try mount -o bind /usr/src "$root/usr/src"
 
 chroot "$root" $(awk -F: -v user="$user" '$1 == user {print $NF}' "$root/etc/passwd")
