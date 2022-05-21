@@ -27,7 +27,7 @@ try mount --make-rslave "$root/run"
 try mount -t tmpfs tmpfs "$root/tmp"
 
 # optional
-try rsync -a -P --remove-source-files "$root/var/cache/distfiles/" /var/cache/distfiles/
+try rsync -a -P --remove-source-files "$root/var/cache/distfiles/" /var/cache/distfiles/ && rm -r "$root/var/cache/distfiles/"*
 try mount -o bind /var/cache/distfiles "$root/var/cache/distfiles"
 try mount -o bind /usr/src "$root/usr/src"
 
