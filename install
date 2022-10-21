@@ -103,6 +103,7 @@ emerge -avuDN @world
 emerge -a app-eselect/eselect-repository
 mkdir -p /etc/portage/repos.conf
 eselect repository enable gentoo-zh # for fcitx5
+eselect repository enable guru # for wofi
 # install preset
 emerge -avuDN @preset
 emerge -aD --depclean
