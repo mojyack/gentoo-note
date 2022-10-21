@@ -62,7 +62,6 @@ echo "" > /etc/hostname
     cp files/distcc-hosts /etc/distcc/hosts
 # if your computer uses legacy-boot:
     cp files/grub /etc/default/grub
-    cp files/update-grub /etc/kernel/postinst.d/
 # if your computer is nfs-client:
     cp files/exports
 # if your computer does not have wireless network adaptor, delete network/25-wireless.network
@@ -132,6 +131,7 @@ efibootmgr -c -L "Gentoo" -l '\EFI\Linux\vmlinuz' -d /dev/${DISK_NAME}
 echo 'GRUB_PLATFORMS="pc"' >> /etc/portage/make.conf
 emerge sys-boot/grub:2
 grub-install --target=i386-pc ${DEVICE}
+grub-mkconfig -o /boot/grub/grub.cfg
 
 # install wifi
 emerge net-wireless/iwd
