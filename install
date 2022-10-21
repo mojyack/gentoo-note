@@ -55,6 +55,7 @@ cp files/locale.gen /etc/
 locale-gen
 eselect locale set en_US.UTF-8
 env-update
+echo loadkeys jp106 >> /etc/vconsole.conf
 # choose hostname
 echo "" > /etc/hostname
 # if you want to use distcc:
