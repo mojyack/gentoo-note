@@ -160,7 +160,7 @@ umount -R /mnt/gentoo
 reboot
 
 # add normal user
-useradd -d /home/mojyack -s /bin/zsh -m mojyack
+useradd -d /home/mojyack -s /bin/zsh -u 1000 -m mojyack
 passwd mojyack
 usermod -aG wheel mojyack
 
