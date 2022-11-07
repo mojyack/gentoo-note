@@ -79,7 +79,7 @@ gitem() {
 
 arch=$(get_arch "$@")
 generic=$(gitem -march=$arch)
-native=$(gitem "$@")
+native=$(gitem -march=native)
 
 needed=$(
     diff -u0 <(echo "$generic") <(echo "$native") |
