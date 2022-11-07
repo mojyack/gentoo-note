@@ -31,4 +31,5 @@ try rsync -a -P --remove-source-files "$root/var/cache/distfiles/" /var/cache/di
 try mount -o bind /var/cache/distfiles "$root/var/cache/distfiles"
 try mount -o bind /usr/src "$root/usr/src"
 
-chroot "$root" $(awk -F: -v user="$user" '$1 == user {print $NF}' "$root/etc/passwd")
+shell=$(awk -F: -v user="$user" '$1 == user {print $NF}' "$root/etc/passwd")
+chroot "$root" /usr/bin/env -i TERM=$TERM $shell --login
