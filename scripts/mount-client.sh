@@ -15,7 +15,6 @@ try() {
 }
 
 client="$1"
-binpkgslot="$2"
 mount_root="/tmp/mnt"
 mount="$mount_root/$client"
 
@@ -34,7 +33,9 @@ if [[ $boot == 1 ]] {
     try mount -t nfs4 "$client":/boot "$mount/boot"
 }
 
-"${0:a:h}/chroot.sh" "$mount" root "$binpkgslot"
+echo "open"
+read
+echo "close"
 
 while true; do
     if umount -R "$mount"; then
