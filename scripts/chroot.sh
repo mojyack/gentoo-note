@@ -16,6 +16,7 @@ try() {
 
 root="$1"
 user="$2"
+binpkgslot="$3"
 
 try mount --types proc /proc "$root/proc"
 try mount --rbind /sys "$root/sys"
@@ -27,9 +28,13 @@ try mount --make-rslave "$root/run"
 try mount -t tmpfs tmpfs "$root/tmp"
 
 # optional
-try rsync -a -P --remove-source-files "$root/var/cache/distfiles/" /var/cache/distfiles/ && rm -r "$root/var/cache/distfiles/"*
+try rsync -a -P --remove-source-files "$root/var/cache/distfiles/" /var/cache/distfiles/
 try mount -o bind /var/cache/distfiles "$root/var/cache/distfiles"
 try mount -o bind /usr/src "$root/usr/src"
+if [[ $binpkgslot != "" ]] {
+    binpkgdir="/var/cache/binpkgs.$binpkgslot"
+    try mount -o bind "$binpkgdir" "$root/var/cache/binpkgs"
+}
 
 shell=$(awk -F: -v user="$user" '$1 == user {print $NF}' "$root/etc/passwd")
 chroot "$root" /usr/bin/env -i TERM=$TERM $shell --login

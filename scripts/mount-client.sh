@@ -15,16 +15,17 @@ try() {
 }
 
 client="$1"
+binpkgslot="$2"
 mount_root="/tmp/mnt"
 mount="$mount_root/$client"
 
 boot=0
 showmount -e "$client" --no-headers | while read e; do
     export=$(echo $e head -n1 | awk '{print "$1";}')
-    if [[ $export == "/boot" ]]; then
+    if [[ $export == "/boot" ]] {
         boot=1
         break
-    fi
+    }
 done
 
 try mkdir -p "$mount"
@@ -33,13 +34,16 @@ if [[ $boot == 1 ]] {
     try mount -t nfs4 "$client":/boot "$mount/boot"
 }
 
-"${0:a:h}/chroot.sh" "$mount" root
+"${0:a:h}/chroot.sh" "$mount" root "$binpkgslot"
 
-if [[ $boot == 1 ]] {
-    try umount -R "$mount/boot"
-}
-try umount -R "$mount"
-try rmdir "$mount"
-if [[ -z "$(ls -A "$mount_root")" ]] {
-    try rmdir "$mount_root"
-}
+while true; do
+    if umount -R "$mount"; then
+        try rmdir "$mount"
+        if [[ -z "$(ls -A "$mount_root")" ]] {
+            try rmdir "$mount_root"
+        }
+        exit 0
+    fi
+    echo "unmount failed. press any key to retry"
+    read
+done
