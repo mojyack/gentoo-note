@@ -2,7 +2,7 @@
 
 set -e
 
-if [[ $# != 2 ]] {
+if [[ $# < 1 ]] {
     echo "invalid usage"
     exit 1
 }
