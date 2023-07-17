@@ -7,6 +7,8 @@ if [[ $# < 1 ]] {
     exit 1
 }
 
+mount -t tmpfs tmpfs "$1/tmp"
+
 env \
     PORTAGE_CONFIGROOT="$1" \
     SYSROOT="/" \
@@ -18,5 +20,7 @@ env \
     PKGDIR="/var/cache/binpkgs$2" \
     zsh \
 || true
+
+umount "$1/tmp"
 
 exit 0
