@@ -51,6 +51,7 @@ mkdir /etc/zsh
 cp files/zshenv /etc/zsh/
 rm /etc/localtime
 ln -s ../usr/share/zoneinfo/Asia/Tokyo /etc/localtime
+systemctl enable systemd-timesyncd.service
 cp files/locale.gen /etc/
 locale-gen
 eselect locale set en_US.UTF-8
