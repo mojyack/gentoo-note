@@ -1,0 +1,1 @@
+ACTION=="add", SUBSYSTEMS=="input", ATTRS{id/vendor}=="1a86", ATTRS{id/product}=="e5e3", RUN="/usr/sbin/fixtouch $kernel"
