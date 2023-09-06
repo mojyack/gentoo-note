@@ -201,7 +201,7 @@ auto fix_x_coordinate(const double v) -> double {
     } else {
         r = v - ((v - 0.80) / 0.20) * 0.02;
     }
-    printf("X: %f -> %f\n", v, r);
+    // printf("X: %f -> %f\n", v, r);
     return r;
 }
 
