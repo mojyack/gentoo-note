@@ -1,11 +1,10 @@
-#include <string>
-#include <sstream>
 #include <iostream>
+#include <sstream>
+#include <string>
 
 #include <fcntl.h>
 #include <linux/uinput.h>
 #include <unistd.h>
-
 
 template <class... Args>
 auto build_string(Args... args) -> std::string {
@@ -196,7 +195,7 @@ auto fix_x_coordinate(const double v) -> double {
         r = v + (v / 0.05) * 0.02;
     } else if(v < 0.20) {
         r = v + (1 - (v - 0.05) / (0.20 - 0.05)) * 0.02;
-    } else if(v < 0.80){
+    } else if(v < 0.80) {
         r = v;
     } else {
         r = v - ((v - 0.80) / 0.20) * 0.02;
@@ -213,8 +212,13 @@ auto watcher(const int pfd, const int vfd) {
     auto event = input_event();
 loop:
     if(read(pfd, &event, sizeof(event)) != sizeof(event)) {
-        warn("read() failed: ", errno);
-        return;
+        if(errno == ENODEV) {
+            // device disconnected
+            return;
+        } else {
+            warn("read() failed: ", errno);
+            return;
+        }
     }
 
     constexpr auto max_x = 2048.0;

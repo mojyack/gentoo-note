@@ -1,1 +1,1 @@
-ACTION=="add", SUBSYSTEMS=="input", KERNEL=="event*", ATTRS{id/vendor}=="1a86", ATTRS{id/product}=="e5e3", RUN="systemctl start fixtouch@$kernel.service'"
+ACTION=="add", SUBSYSTEMS=="input", KERNEL=="event*", ATTRS{id/vendor}=="1a86", ATTRS{id/product}=="e5e3", RUN="/usr/bin/systemctl restart fixtouch@$kernel.service'"
