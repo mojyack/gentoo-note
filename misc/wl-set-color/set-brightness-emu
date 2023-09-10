@@ -1,0 +1,18 @@
+#!/bin/zsh
+
+tmp="/tmp/brightness"
+
+if [[ -e $tmp ]]; then
+    brightness=$(cat $tmp)
+else
+    brightness=100
+fi
+
+if [[ $1 == +* || $1 == -* ]]; then
+    brightness=$(( $brightness + $1 ))
+else
+    brightness=$1
+fi
+
+wl-set-color $brightness 100
+echo $brightness > $tmp
