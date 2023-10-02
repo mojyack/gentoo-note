@@ -9,5 +9,8 @@
 192.168.11.64   usb1
 192.168.11.65   usb2
 
+192.168.10.1    direct-host
+192.168.10.2    direct-client
+
 127.0.0.1       localhost
 ::1             localhost
