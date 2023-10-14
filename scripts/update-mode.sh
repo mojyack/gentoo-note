@@ -17,12 +17,12 @@ if [[ $1 == 1 ]]; then
 
     echo on
 elif [[ $1 == 0 ]]; then
-    ip address del 192.168.10.2/24 dev $(cat /tmp/upd-if)
-    rm /tmp/upd-if
-
     umount /var/cache/distfiles
     umount /tmp/rtmp
     rmdir /tmp/rtmp
+
+    ip address del 192.168.10.2/24 dev $(cat /tmp/upd-if)
+    rm /tmp/upd-if
 
     echo off
 else
