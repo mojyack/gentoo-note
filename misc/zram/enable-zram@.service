@@ -1,0 +1,9 @@
+[Unit]
+Description=enable zram
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/enable-zram %I
+
+[Install]
+WantedBy=multi-user.target
