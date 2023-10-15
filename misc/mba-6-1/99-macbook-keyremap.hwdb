@@ -1,0 +1,4 @@
+evdev:name:Apple Inc. Apple Internal Keyboard / Trackpad:*
+    KEYBOARD_KEY_700e2=leftctrl
+    KEYBOARD_KEY_70091=leftalt
+    KEYBOARD_KEY_70090=rightalt

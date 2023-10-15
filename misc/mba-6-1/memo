@@ -1,0 +1,19 @@
+# no-bd-prochot
+ln -s $PWD/no-bd-prochot /usr/sbin
+ln -s $PWD/no-bd-prochot.service /etc/systemd/system
+systemctl daemon-reload
+systemctl enable --now no-bd-prochot
+
+# fand
+ln -s $PWD/fand /usr/sbin
+ln -s $PWD/fand.service /etc/systemd/system
+systemctl daemon-reload
+systemctl enable --now fand
+
+# keyboard remap
+ln -s $PWD/99-macbook-keyremap.hwdb /etc/udev/hwdb.d
+systemd-hwdb update
+udevadm trigger
+
+# facetimehd firmware
+ln -s $PWD/facetimehd /lib/firmware

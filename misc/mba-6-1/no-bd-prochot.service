@@ -1,0 +1,11 @@
+[Unit]
+Description=disable BD PROCHOT
+After=suspend.target
+
+[Service]
+Type=simple
+ExecStart=/usr/sbin/no-bd-prochot
+
+[Install]
+WantedBy=multi-user.target
+WantedBy=suspend.target

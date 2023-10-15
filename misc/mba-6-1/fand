@@ -1,0 +1,34 @@
+#!/bin/zsh
+
+set -e
+
+# config
+TEMP_MIN=45000
+TEMP_MAX=80000
+
+# not important
+TEMP_RANGE=$(( $TEMP_MAX-$TEMP_MIN ))
+PRECISION=10000
+
+cd /sys/devices/platform/applesmc.768
+
+echo 1 > fan1_manual
+FAN_MAX=$(cat fan1_max)
+FAN_MIN=$(cat fan1_min)
+FAN_RANGE=$(( $FAN_MAX-$FAN_MIN ))
+
+while true; do
+    temp=$(cat temp14_input)
+    if (( $temp < $TEMP_MIN )); then
+        fan=0
+    elif (( $temp > $TEMP_MAX )); then
+        fan=$FAN_MAX
+    else
+        r=$(( $PRECISION * ($temp - $TEMP_MIN) / $TEMP_RANGE ))
+        fan=$(( $r * $r * $FAN_RANGE / $PRECISION / $PRECISION + $FAN_MIN ))
+    fi
+    echo $fan > fan1_output
+    # echo $temp $fan
+    sleep 1
+done
+
