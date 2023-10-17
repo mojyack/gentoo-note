@@ -29,6 +29,6 @@ while true; do
     fi
     echo $fan > fan1_output
     # echo $temp $fan
-    read -t 1 || true
+    sleep 1
 done
 
