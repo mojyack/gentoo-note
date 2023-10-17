@@ -1,0 +1,20 @@
+diff --git a/keyboard.c b/keyboard.c
+index c5faa12..14aed11 100644
+--- a/keyboard.c
++++ b/keyboard.c
+@@ -365,14 +365,7 @@ void
+ kbd_press_key(struct kbd *kb, struct key *k, uint32_t time)
+ {
+     if ((kb->compose == 1) && (k->type != Compose) && (k->type != Mod)) {
+-        if ((k->type == NextLayer) || (k->type == BackLayer) ||
+-            ((k->type == Code) && (k->code == KEY_SPACE))) {
+-            kb->compose = 0;
+-            if (kb->debug)
+-                fprintf(stderr, "showing layout index\n");
+-            kbd_switch_layout(kb, &kb->layouts[Index], 0);
+-            return;
+-        } else if (k->layout) {
++        if (k->layout) {
+             kb->compose++;
+             if (kb->debug)
+                 fprintf(stderr, "showing compose %d\n", kb->compose);
