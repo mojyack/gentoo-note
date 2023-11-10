@@ -1,14 +1,14 @@
-192.168.11.1    solomon
-192.168.11.2    solomon-wireless
-192.168.11.3    chloe
-192.168.11.4    chloe-wireless
-192.168.11.5    cindy
-192.168.11.6    corn
-192.168.11.8    cidore
-192.168.11.9    mito
-192.168.11.10   sophia
-192.168.11.64   usb1
-192.168.11.65   usb2
+192.168.1.1    solomon
+192.168.1.2    solomon-wireless
+192.168.1.3    chloe
+192.168.1.4    chloe-wireless
+192.168.1.5    cindy
+192.168.1.6    corn
+192.168.1.8    cidore
+192.168.1.9    mito
+192.168.1.10   sophia
+192.168.1.64   usb1
+192.168.1.65   usb2
 
 192.168.10.1    direct-host
 192.168.10.2    direct-client
