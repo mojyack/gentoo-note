@@ -25,7 +25,7 @@ action_make() {
         return 1
     }
 
-    kmake=(make CC=clang LLVM=1 O=$1 -j24)
+    kmake=(make CC=clang LLVM=1 O=$1 -j72)
     pushd "$1"
     $kmake
     $kmake modules
@@ -68,11 +68,11 @@ action_install() {
 
     export INSTALL_MOD_PATH="$2"
 
-    kmake=(make CC=clang LLVM=1 O=$1 -j24)
+    kmake=(make CC=clang LLVM=1 O=$1 -j72)
 
     $kmake modules_install
 
-    VERSION=$($kmake kernelversion)
+    VERSION=$($kmake --no-print-directory kernelversion)
     depmod -b "$2" "$VERSION"
 
     vmlinuz="$1/arch/x86_64/boot/bzImage"
@@ -87,7 +87,7 @@ action_install() {
 
 # action_any MAKE_TARGET BUILDDIR
 action_any() {
-    make CC=clang LLVM=1 O="$2" -j24 "$1"
+    make CC=clang LLVM=1 O="$2" -j72 "$1"
     echo "done"
 }
 
