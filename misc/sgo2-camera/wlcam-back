@@ -1,0 +1,40 @@
+#!/bin/zsh
+
+CSI_NUM=0
+SENSOR_WIDTH=3264
+SENSOR_HEIGHT=2448
+WIDTH=3200
+HEIGHT=2100
+OV=""
+LENS=""
+
+sensor_params=(
+    "Red Balance"       1850
+    "Blue Balance"      1550
+    "Exposure"          2400
+    "Horizontal Flip"   1
+    "Vertical Flip"     0
+    "Vertical Blanking" 40
+    "Analogue Gain"     1024
+)
+
+source ~/bin/wlcam-helper
+
+open_wlcam
+apply_sensor_ctrl
+
+swaymsg "splitv"
+"$VCTRL" $LENS &
+sleep 0.1
+"$VCTRL" $OV &
+sleep 0.1
+swaymsg "
+move down;
+resize shrink height 84 px;
+"
+sleep 0.1
+swaymsg "
+focus up;
+resize shrink height 140 px;
+resize shrink width 112 px;
+" > /dev/null

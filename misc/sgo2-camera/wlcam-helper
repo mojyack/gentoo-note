@@ -1,0 +1,70 @@
+#!/bin/zsh
+
+BIN="/usr/bin"
+BIN="/home/mojyack/build/wlcam/release/src/ipu3"
+WLCAM="$BIN/wlcam-ipu3"
+DEVINFO="$BIN/wlcam-ipu3-devinfo"
+VCTRL="v4l2-wlctl"
+FIFO="/tmp/wlcam.fifo"
+
+wlcam_args=(
+    --cio2 /dev/media1
+    --imgu /dev/media0
+    --cio2-entity "ipu3-csi2 $CSI_NUM"
+    --imgu-entity "ipu3-imgu 0"
+    --sensor-mbus-code 12295
+    --sensor-width $SENSOR_WIDTH
+    --sensor-height $SENSOR_HEIGHT
+    --width $WIDTH
+    --height $HEIGHT
+    -s "$FIFO"
+    -o ~/pictures/camera
+)
+
+event_handler() {
+    while [[ ! -e  $FIFO ]]; do
+        sleep 0.1
+    done
+
+    while true; do
+        read line
+        echo "[$line]"
+        if [[ $line == "hello" ]]; then
+            echo "hello!"
+        elif [[ $line == "ipu3"* ]]; then
+            line=($(echo $line))
+            if [[ ${line[2]} == "sensor" ]]; then
+                OV=${line[3]}
+            elif [[ ${line[2]} == "lens" ]]; then
+                LENS=${line[3]}
+            else
+                echo "warn: unknown ipu3 event: $line"
+            fi
+            if [[ $OV != "" && $LENS != "" ]]; then
+                return 0 # return once
+            fi
+        elif [[ $line == "bye" ]]; then
+            echo "bye!"
+            rm -f "$FIFO"
+            return 0
+        elif [[ $line == "" ]]; then
+            #
+        else
+            echo "warn: unknown event: [$line]"
+            return 1
+        fi
+    done < "$FIFO"
+}
+
+open_wlcam() {
+    killall -SIGUSR1 wvkbd
+    swaymsg "workspace 8"
+
+    ("$WLCAM" ${wlcam_args[@]}; killall v4l2-wlctl; swaymsg "workspace 1") &
+    event_handler # in order to set $OV/$LENS, cannot run in background
+    event_handler &
+}
+
+apply_sensor_ctrl() {
+    $VCTRL-oneshot $OV ${sensor_params[@]}
+}
