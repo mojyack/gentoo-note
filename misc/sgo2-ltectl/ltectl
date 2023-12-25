@@ -1,0 +1,64 @@
+#!/usr/bin/env zsh
+
+modem_number() {
+    mmcli -L | cut -d ' ' -f 5 | cut -d '/' -f 6
+}
+
+fix_buffer_size() {
+    echo 16383 > /sys/bus/usb/devices/2-3/2-3:1.0/net/wwp0s20f0u3/cdc_ncm/rx_max
+    echo 16383 > /sys/bus/usb/devices/2-3/2-3:1.0/net/wwp0s20f0u3/cdc_ncm/tx_max
+    echo 16384 > /sys/bus/usb/devices/2-3/2-3:1.0/net/wwp0s20f0u3/cdc_ncm/rx_max
+    echo 16384 > /sys/bus/usb/devices/2-3/2-3:1.0/net/wwp0s20f0u3/cdc_ncm/tx_max
+}
+
+alias qmi="qmicli -d /dev/cdc-wdm0 --device-open-proxy --device-open-mbim"
+alias mbim="mbimcli -d /dev/cdc-wdm0 --device-open-proxy"
+
+if [[ $1 == "start" ]] {
+    fix_buffer_size
+    mbimcli -d /dev/cdc-wdm0 --set-radio-state=on
+    mbim-network /dev/cdc-wdm0 start
+    /home/mojyack/bin/mbim-set-ip /dev/cdc-wdm0 wwp0s20f0u3
+} elif [[ $1 == "stop" ]] {
+    ip link set wwp0s20f0u3 down
+    mbim-network /dev/cdc-wdm0 stop
+    mbimcli -d /dev/cdc-wdm0 --set-radio-state=off
+} elif [[ $1 == "modr" ]] {
+    modprobe -r cdc_mbim
+    modprobe cdc_mbim
+} elif [[ $1 == "startmm" ]] {
+    mmcli -m $(modem_number) --simple-connect=apn=rakuten.jp
+    # TODO
+    # mbim-set-ip /dev/cdc-wdm0 wwp0s20f0u3
+    /home/mojyack/bin/mbim-set-ip /dev/cdc-wdm0 wwp0s20f0u3
+} elif [[ $1 == "stopmm" ]] {
+    systemctl stop ModemManager
+} elif [[ $1 == "sms-add" ]] {
+    if [[ $2 == "" || $3 == "" ]] {
+        echo "usage: $0 sms-add TEXT PHONE_NUMBER"
+        exit 1
+    }
+    mmcli -m $(modem_number) --messaging-create-sms="text=\'$2\',number=\'$3\'"
+} elif [[ $1 == "sms-list" ]] {
+    mmcli -m $(modem_number) --messaging-list-sms
+} elif [[ $1 == "sms-read" ]] {
+    mmcli -m $(modem_number) -s $2
+} elif [[ $1 == "sms-send" ]] {
+    mmcli -m $(modem_number) -s $2 --send
+} elif [[ $1 == "install" ]] {
+    mbim --disable-pin=0000
+    qmi --uim-switch-slot=1
+} elif [[ $1 == "reset-session" ]] {
+    # TODO
+    # AID magic number
+    qmi --uim-change-provisioning-session='activate=no,session-type=primary-gw-provisioning'
+    qmi --uim-change-provisioning-session="activate=yes,session-type=primary-gw-provisioning,slot=1,aid=A0:00:00:00:87:10:02:FF:81:FF:09:89:09:06:00:00"
+} else {
+    echo "unknown action"
+    exit 1
+}
+
+#qmicli -d /dev/cdc-wdm0 --device-open-proxy --device-open-mbim --uim-get-card-status
+#mbimcli -d /dev/cdc-wdm0 -v --set-radio-state=on
+#mbim-network /dev/cdc-wdm0 start
+
