@@ -1,0 +1,8 @@
+workdir="/tmp/android"
+iso="current.iso"
+iso_mount="$workdir/iso"
+object_dir="$workdir/objects"
+rootfs_mount="$workdir/rootfs"
+rootfs_image="$object_dir/rootfs.img"
+rootfs_image_size="16GiB"
+system_mount="$workdir/system"
