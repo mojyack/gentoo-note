@@ -1,0 +1,36 @@
+# create image
+qemu-img create -f qcow2 drive.qcow2 128G
+
+# get drivers
+ref: https://virtio-fs.gitlab.io/howto-windows.html
+get virtio-win.iso from
+https://github.com/virtio-win/virtio-win-pkg-scripts/tree/master
+get winfsp from
+https://github.com/billziss-gh/winfsp/releases/latest
+
+# create container
+fallocate data -l 128M
+sgdisk -n 1:0: -t 1:0700 data
+losetup -f -P data
+...
+losetup -d /dev/loop?
+
+# disable windows checks
+- Shift+F10 (run cmd)
+- run regedit
+- in HKEY_LOCAL_MACHINE\SYSTEM\Setup
+- right-click New, Key, LabConfig
+- New, DWORD (32-bit), BypassTPMCheck, 1
+- same for BypassRAMCheck and BypassSecureBootCheck
+
+# fix INACCESSIBLE_BOOT_DEVICE
+ref: https://gist.github.com/Francesco149/dc156cfd9ecfc3659469315c45fa0f96
+boot from install media
+```
+loaddrv D:\viostor\w11\amd64\viostor.inf
+bcdboot C:\Windows
+```
+
+# others
+https://github.com/ionuttbara/windows-defender-remover
+https://github.com/massgravel/Microsoft-Activation-Scripts

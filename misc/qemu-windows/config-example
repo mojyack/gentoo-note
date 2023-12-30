@@ -1,0 +1,14 @@
+# for base
+mem=8G
+
+# for gpu
+gpu_pci_id="41:00.0"
+gpu_iommu_group=32
+
+# permissions
+own_files=(
+    /dev/vfio/$gpu_iommu_group
+    /dev/input/by-id/usb-Topre_Corporation_Realforce_87-event-kbd
+    /dev/input/by-id/usb-Nordic_2.4G_Wireless_Receiver-if01-event-mouse
+    /sys/bus/pci/devices/0000:$gpu_pci_id/config
+)
