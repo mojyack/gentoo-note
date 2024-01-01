@@ -51,8 +51,21 @@ gtk=(
 gpu=(
     -vga none
     -nographic
-    -device vfio-pci,host=$gpu_pci_id,x-vga=on,romfile=gt630.rom
 )
+
+if [[ -n $gpu_audio_pci_id ]]; then
+    gpu=(
+        $gpu
+        -device pcie-root-port,id=gpu_root_port,chassis=0,slot=0,bus=pcie.0 \
+        -device vfio-pci,bus=gpu_root_port,addr=00.0,host=$gpu_pci_id,x-vga=on,multifunction=on,romfile=$gpu_rom
+        -device vfio-pci,bus=gpu_root_port,addr=00.1,host=$gpu_audio_pci_id
+    )
+else
+    gpu=(
+        $gpu
+        -device vfio-pci,host=$gpu_pci_id,x-vga=on,romfile=$gpu_rom
+    )
+fi
 
 audio=(
     -audiodev pa,id=snd0
