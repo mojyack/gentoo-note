@@ -3,6 +3,10 @@ mem=8G
 
 # for gpu
 gpu_pci_id="41:00.0"
+gpu_rom="rom/rx550.rom"
+## for multifunction gpu
+gpu_audio_pci_id="41:00.1"
+
 gpu_iommu_group=32
 
 # permissions
