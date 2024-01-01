@@ -25,7 +25,7 @@ action_make() {
         return 1
     }
 
-    kmake=(make CC=clang LLVM=1 O=$1 -j72)
+    kmake=(make CC=clang LLVM=1 O=$1 -j$(nproc))
     pushd "$1"
     $kmake
     $kmake modules
@@ -68,7 +68,7 @@ action_install() {
 
     export INSTALL_MOD_PATH="$2"
 
-    kmake=(make CC=clang LLVM=1 O=$1 -j72)
+    kmake=(make CC=clang LLVM=1 O=$1 -j$(nproc))
 
     $kmake modules_install
 
@@ -87,7 +87,7 @@ action_install() {
 
 # action_any MAKE_TARGET BUILDDIR
 action_any() {
-    make CC=clang LLVM=1 O="$2" -j72 "$1"
+    make CC=clang LLVM=1 O="$2" -j$(nproc) "$1"
     echo "done"
 }
 
