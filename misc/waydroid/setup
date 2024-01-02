@@ -1,4 +1,3 @@
-eselect repository enable xira
 emerge -a =app-containers/waydroid-9999
 
 # waydroid script
