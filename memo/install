@@ -43,16 +43,9 @@ cp files/fstab /etc/fstab
 # edit $UUID in fstab, check $(blkid)
 
 # setup /etc
-cp files/hosts /etc/hosts
-cp files/issue /etc/issue
-cp files/doas.conf /etc/doas.conf
-cp files/50-coredump.conf /etc/sysctl.d/50-coredump.conf
-mkdir /etc/zsh
-cp files/zshenv /etc/zsh/
-rm /etc/localtime
+rsync -r files/static/ /
 ln -s ../usr/share/zoneinfo/Asia/Tokyo /etc/localtime
 systemctl enable systemd-timesyncd.service
-cp files/locale.gen /etc/
 locale-gen
 eselect locale set en_US.UTF-8
 env-update
@@ -65,9 +58,6 @@ echo "" > /etc/hostname
     cp files/grub /etc/default/grub
 # if your computer is nfs-client:
     cp files/exports
-# if your computer does not have wireless network adaptor, delete network/25-wireless.network
-# and edit "Name" in /etc/systemd/network/*
-cp -r files/network/* /etc/systemd/network/
 
 # setup portage
 rm -rf /etc/portage
@@ -165,6 +155,7 @@ reboot
 # add normal user
 useradd -d /home/mojyack -s /bin/zsh -u 1000 -m mojyack
 passwd mojyack
+usermod -aG wheel root
 usermod -aG wheel mojyack
 
 # if your computer is a local server:
