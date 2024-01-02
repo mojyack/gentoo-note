@@ -11,3 +11,10 @@ doas venv/bin/python3 main.py
 waydroid init -f
 doas sed -i 's/lxc.apparmor.profile/#/' /var/lib/waydroid/lxc/waydroid/config
 doas venv/bin/python3 main.py install libndk microg
+
+# to set resolution, put this on waydroid.cfg
+persist.waydroid.width=1280
+persist.waydroid.height=720
+# or run these and restart waydroid
+waydroid prop set persist.waydroid.width = 1280
+waydroid prop set persist.waydroid.height = 720
