@@ -15,5 +15,5 @@ doas venv/bin/python3 main.py install libndk microg
 persist.waydroid.width=1280
 persist.waydroid.height=720
 # or run these and restart waydroid
-waydroid prop set persist.waydroid.width = 1280
-waydroid prop set persist.waydroid.height = 720
+waydroid prop set persist.waydroid.width 1280
+waydroid prop set persist.waydroid.height 720
