@@ -1,0 +1,4 @@
+files=(
+    /usr/lib/rust/1.71.1/bin
+    /usr/lib/rust/1.71.1/lib
+)
