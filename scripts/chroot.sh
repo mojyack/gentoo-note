@@ -27,9 +27,13 @@ try mount --make-rslave "$root/run"
 try mount -t tmpfs tmpfs "$root/tmp"
 
 # optional
-try rsync -a -P --remove-source-files "$root/var/cache/distfiles/" /var/cache/distfiles/
-try mount -o bind /var/cache/distfiles "$root/var/cache/distfiles"
-try mount -o bind /usr/src "$root/usr/src"
+if [[ -e "$root/var/cache/distfiles" ]]; then
+    try rsync -a -P --remove-source-files "$root/var/cache/distfiles/" /var/cache/distfiles/
+    try mount -o bind /var/cache/distfiles "$root/var/cache/distfiles"
+fi
+if [[ -e "$root/usr/src" ]]; then
+    try mount -o bind /usr/src "$root/usr/src"
+fi
 
 shell=$(awk -F: -v user="$user" '$1 == user {print $NF}' "$root/etc/passwd")
 chroot "$root" /usr/bin/env -i TERM=$TERM $shell --login
