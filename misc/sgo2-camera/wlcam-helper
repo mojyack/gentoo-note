@@ -7,9 +7,22 @@ DEVINFO="$BIN/wlcam-ipu3-devinfo"
 VCTRL="v4l2-wlctl"
 FIFO="/tmp/wlcam.fifo"
 
+find_devnode_by_model() {
+    cd /sys/bus/media/devices
+    for dir in *; do
+        read model < $dir/model
+        if [[ $model == $1 ]]; then
+            echo $dir
+            return 0
+        fi
+    done
+    echo "device $1 not found"
+    return 1
+}
+
 wlcam_args=(
-    --cio2 /dev/media1
-    --imgu /dev/media0
+    --imgu /dev/$(find_devnode_by_model "ipu3-imgu")
+    --cio2 /dev/$(find_devnode_by_model "Intel IPU3 CIO2")
     --cio2-entity "ipu3-csi2 $CSI_NUM"
     --imgu-entity "ipu3-imgu 0"
     --sensor-mbus-code 12295
