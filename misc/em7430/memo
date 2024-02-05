@@ -1,0 +1,6 @@
+# at
+dmesg | grep '.3: Qualcomm USB modem converter detected' -A1
+minicom -b 115200 -D /dev/ttyUSB2
+
+# force probe qmi-wwan
+echo 1199 9077 0 1199 9071 > /sys/bus/usb/drivers/qmi_wwan/new_id

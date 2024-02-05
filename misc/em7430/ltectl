@@ -1,0 +1,74 @@
+#!/usr/bin/env zsh
+
+set -e
+
+find_interface() {
+    cd /sys/class/net
+    arr=(wwp*)
+    echo ${arr[1]}
+}
+
+# $1 interface
+find_wdm() {
+    cd /sys/class/net/$1/device/usbmisc
+    arr=(cdc-wdm0*)
+    echo /dev/${arr[1]}
+}
+
+# $1 apn
+# $2 filepath
+create_mbim_network_config() {
+    echo -e "APN=$1\nPROXY=yes" > $2
+}
+
+mbim_conf_path="/tmp/mbim-network.conf"
+
+# $1 interface
+# $2 wdm
+# $3 apn
+start() {
+    prestart $1
+    create_mbim_network_config "$3" "$mbim_conf_path"
+    mbimcli -p -d $2 --set-radio-state=on
+    mbim-network --profile="$mbim_conf_path" $2 start
+    ./mbim-set-ip $1 $2
+}
+
+# $1 interface
+# $2 wdm
+stop() {
+    ip link set $1 down
+    mbim-network --profile="$mbim_conf_path" $2 stop
+    mbimcli -p -d $2 --set-radio-state=off
+}
+
+reload() {
+    modprobe -r cdc_mbim
+    modprobe cdc_mbim
+}
+
+prestart() {}
+
+source config
+
+interface=$(find_interface)
+if [[ -z $interface ]]; then
+    echo "no wwan interface found"
+    exit 1
+fi
+wdm=$(find_wdm $interface)
+
+case $1 in
+    start)
+        start $interface $wdm $apn
+        ;;
+    stop)
+        stop $interface $wdm
+        ;;
+    reload)
+        reload
+        ;;
+    *)
+        echo "unknown command"
+        ;;
+esac

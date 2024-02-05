@@ -1,0 +1,186 @@
+#!/usr/bin/env zsh
+# payload:
+# [/dev/cdc-wdm0] IPv4 configuration available: 'address, gateway, dns, mtu'
+#      IP [0]: '10.177.146.152/28'
+#     Gateway: '10.177.146.153'
+#     DNS [0]: '172.16.206.49'
+#     DNS [1]: '172.16.206.50'
+#         MTU: '1440'
+# 
+# [/dev/cdc-wdm0] IPv6 configuration available: 'address, gateway, dns, mtu'
+#      IP [0]: '240b:c020:4c6:7e7:209a:a4c0:1114:cb1a/64'
+#     Gateway: '240b:c020:4c6:7e7:30b7:65f2:9566:67e'
+#     DNS [0]: '240b:c000::cafe:1'
+#     DNS [1]: '240b:c000::cafe:2'
+#         MTU: '1440'
+
+# $1 line
+# => addr
+parse_ip() {
+    re="IP \[([0-9]+)\]: '(.+)'"
+    if [[ $1 =~ $re ]]; then
+        index=${match[1]}
+        addr=${match[2]}
+
+        echo $addr
+    fi
+}
+
+# $1 line
+# => gw
+parse_gateway() {
+    re="Gateway: '(.+)'"
+    if [[ $1 =~ $re ]]; then
+        gw=${match[1]}
+
+        echo "$gw"
+    fi
+}
+
+# $1 line
+# => dns
+parse_dns() {
+    re="DNS \[([0-9]+)\]: '(.+)'"
+    if [[ $1 =~ $re ]]; then
+        index=${match[1]}
+        dns=${match[2]}
+
+        echo "$dns"
+    fi
+}
+
+# $1 line
+# => mtu
+parse_mtu() {
+    re="MTU: '([0-9]+)'"
+    if [[ $1 =~ $re ]]; then
+        mtu=${match[1]}
+
+        echo "$mtu"
+    fi
+}
+
+# $1 line
+# $? 0: state found, 1: state not found
+# => state
+extract_state() {
+    case $line in
+        *"IPv4 configuration available: 'none'"*)
+            echo start
+            return 0
+            ;;
+        *"IPv4 configuration available"*)
+            echo ipv4
+            return 0
+            ;;
+        *"IPv6 configuration available: 'none'"*)
+            echo start
+            return 0
+            ;;
+        *"IPv6 configuration available"*)
+            echo ipv6
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+# $1 interface
+# $2 wdm
+apply_ip_addr() {
+    ipv4_addrs=()
+    ipv4_gateway=""
+    ipv4_dns=()
+    ipv4_mtu=""
+    ipv6_addrs=()
+    ipv6_gateway=""
+    ipv6_dns=()
+    ipv6_mtu=""
+
+    raw_ip_conf=$(mbimcli -d $2 -p --query-ip-configuration)
+
+    state=""
+    while read -r line; do
+        if [[ -z $line ]]; then
+            continue
+        fi
+        if new_state=$(extract_state "$line"); then
+            state=$new_state
+            continue
+        fi
+        if [[ $state == ipv4 ]]; then
+            case $line in
+            *"IP"*)
+                ipv4_addrs+=($(parse_ip "$line"))
+                ;;
+            *"Gateway"*)
+                ipv4_gateway=$(parse_gateway "$line")
+                ;;
+            *"DNS"*)
+                ipv4_dns+=($(parse_dns "$line"))
+                ;;
+            *"MTU"*)
+                ipv4_mtu=$(parse_mtu "$line")
+                ;;
+            *)
+                ;;
+            esac
+        elif [[ $state == ipv6 ]]; then
+            case $line in
+            *"IP"*)
+                ipv6_addrs+=($(parse_ip "$line"))
+                ;;
+            *"Gateway"*)
+                ipv6_gateway=$(parse_gateway "$line")
+                ;;
+            *"DNS"*)
+                ipv6_dns+=($(parse_dns "$line"))
+                ;;
+            *"MTU"*)
+                ipv6_mtu=$(parse_mtu "$line")
+                ;;
+            *)
+                ;;
+            esac
+        fi
+    done <<< $raw_ip_conf
+
+    echo "resetting network interface $1"
+    ip link set $1 down
+    ip -4 addr flush dev $1
+    ip -6 addr flush dev $1
+    ip link set $1 up
+
+    if [[ -n $ipv4_addrs ]]; then
+        echo "setting ipv4 addresses $ipv4_addrs"
+        for addr in $ipv4_addrs; do
+	        ip -4 addr add $addr dev $1 broadcast +
+        done
+	    ip -4 route add default via $ipv4_gateway dev $1
+
+        if [[ -n $ipv4_mtu ]]; then
+		    ip -4 link set mtu $ipv4_mtu dev $1
+        fi
+        for dns in $ipv4_dns; do
+	    	systemd-resolve -4 --interface=$1 --set-dns=$dns
+        done
+    fi
+    if [[ -n $ipv6_addrs ]]; then
+        echo "setting ipv6 addresses $ipv6_addrs"
+        for addr in $ipv6_addrs; do
+	        ip -6 addr add $addr dev $1
+        done
+	    ip -6 route add default via $ipv6_gateway dev $1
+
+        if [[ -n $ipv6_mtu ]]; then
+		    ip -6 link set mtu $ipv6_mtu dev $1
+        fi
+        for dns in $ipv6_dns; do
+	    	systemd-resolve -6 --interface=$1 --set-dns=$dns
+        done
+    fi
+}
+
+apply_ip_addr $1 $2
