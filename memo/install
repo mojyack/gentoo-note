@@ -157,6 +157,8 @@ useradd -d /home/mojyack -s /bin/zsh -u 1000 -m mojyack
 passwd mojyack
 usermod -aG wheel root
 usermod -aG wheel mojyack
+# if you do not use logind:
+usermod -aG audio mojyack
 
 # if your computer is a local server:
     cp files/rsyncd.conf /etc/
