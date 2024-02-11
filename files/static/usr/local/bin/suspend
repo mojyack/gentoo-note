@@ -1,0 +1,7 @@
+#!/bin/sh
+
+hook="/usr/local/bin/suspend-hook"
+
+[ -x "$hook" ] && "$hook" 0
+echo mem > /sys/power/state
+[ -x "$hook" ] && "$hook" 1
