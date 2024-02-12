@@ -156,30 +156,34 @@ apply_ip_addr() {
     if [[ -n $ipv4_addrs ]]; then
         echo "setting ipv4 addresses $ipv4_addrs"
         for addr in $ipv4_addrs; do
-	        ip -4 addr add $addr dev $1 broadcast +
+            ip -4 addr add $addr dev $1 broadcast +
         done
-	    ip -4 route add default via $ipv4_gateway dev $1
+        ip -4 route add default via $ipv4_gateway dev $1
 
         if [[ -n $ipv4_mtu ]]; then
-		    ip -4 link set mtu $ipv4_mtu dev $1
+            ip -4 link set mtu $ipv4_mtu dev $1
         fi
-        for dns in $ipv4_dns; do
-	    	systemd-resolve -4 --interface=$1 --set-dns=$dns
-        done
+        if type systemd-resolve > /dev/null; then
+            for dns in $ipv4_dns; do
+                systemd-resolve -4 --interface=$1 --set-dns=$dns
+            done
+        fi
     fi
     if [[ -n $ipv6_addrs ]]; then
         echo "setting ipv6 addresses $ipv6_addrs"
         for addr in $ipv6_addrs; do
-	        ip -6 addr add $addr dev $1
+            ip -6 addr add $addr dev $1
         done
-	    ip -6 route add default via $ipv6_gateway dev $1
+        ip -6 route add default via $ipv6_gateway dev $1
 
         if [[ -n $ipv6_mtu ]]; then
-		    ip -6 link set mtu $ipv6_mtu dev $1
+            ip -6 link set mtu $ipv6_mtu dev $1
         fi
-        for dns in $ipv6_dns; do
-	    	systemd-resolve -6 --interface=$1 --set-dns=$dns
-        done
+        if type systemd-resolve > /dev/null; then
+            for dns in $ipv6_dns; do
+                systemd-resolve -6 --interface=$1 --set-dns=$dns
+            done
+        fi
     fi
 }
 
