@@ -30,10 +30,34 @@ try mount -t tmpfs tmpfs "$root/tmp"
 if [[ -e "$root/var/cache/distfiles" ]]; then
     try rsync -a -P --remove-source-files "$root/var/cache/distfiles/" /var/cache/distfiles/
     try mount -o bind /var/cache/distfiles "$root/var/cache/distfiles"
+    distfiles_mounted=1
 fi
 if [[ -e "$root/usr/src" ]]; then
     try mount -o bind /usr/src "$root/usr/src"
+    src_mounted=1
 fi
 
 shell=$(awk -F: -v user="$user" '$1 == user {print $NF}' "$root/etc/passwd")
 chroot "$root" /usr/bin/env -i TERM=$TERM $shell --login
+
+retry_command() {
+    while true; do
+        if $@; then
+            return 0
+        fi
+        echo "$@ failed. press any key to retry"
+        read
+    done
+}
+
+if [[ $distfiles_mounted == 1 ]]; then
+    retry_command umount "$root/var/cache/distfiles"
+fi
+if [[ $src_mounted == 1 ]]; then
+    retry_command umount "$root/usr/src"
+fi
+retry_command umount "$root/tmp"
+retry_command umount -l "$root/run"
+retry_command umount -l "$root/dev"
+retry_command umount -l "$root/sys"
+retry_command umount "$root/proc"
