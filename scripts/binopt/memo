@@ -1,0 +1,2 @@
+./listbinfiles.sh | ./filestopkgs.sh > pkgs.txt
+sort pkgs.txt | uniq > pkgs2.txt
