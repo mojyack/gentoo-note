@@ -73,7 +73,6 @@ action_install() {
     $kmake modules_install
 
     VERSION=$($kmake --no-print-directory kernelversion)
-    depmod -b "$2" "$VERSION"
 
     vmlinuz="$1/arch/x86_64/boot/bzImage"
 
@@ -82,6 +81,9 @@ action_install() {
     } else {
         install_pc "$vmlinuz" "$VERSION" "$2"
     }
+
+    depmod -b "$2" "$VERSION"
+
     echo "done"
 }
 
