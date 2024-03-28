@@ -13,6 +13,7 @@ enum layout_id {
 	Full = 0,
 	Special,
 	NumLayouts,
+	Index = 0,
 };
 
 static struct key keys_full[], keys_special[];

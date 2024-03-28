@@ -1,7 +1,7 @@
 #ifndef config_def_h_INCLUDED
 #define config_def_h_INCLUDED
 
-static const char *default_font = "Monospace 14";
+#define DEFAULT_FONT "Monospace 14"
 static const int transparency = 225;
 
 struct clr_scheme schemes[] = {
@@ -12,6 +12,7 @@ struct clr_scheme schemes[] = {
   .high = {.bgra = {100, 100, 100, transparency}},
   .swipe = {.bgra = {100, 255, 100, 64}},
   .text = {.color = UINT32_MAX},
+  .font = DEFAULT_FONT,
 },
 {
   /* colors */
@@ -20,6 +21,7 @@ struct clr_scheme schemes[] = {
   .high = {.bgra = {100, 100, 100, transparency}},
   .swipe = {.bgra = {100, 255, 100, 64}},
   .text = {.color = UINT32_MAX},
+  .font = DEFAULT_FONT,
 }
 };
 
