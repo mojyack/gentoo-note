@@ -1,0 +1,3 @@
+git clone https://github.com/mojyack/wvkbd -b opt-popup --depth=1
+# copy *.h
+CC=clang CFLAGS='-march=native' make LAYOUT=custom POPUP=0
