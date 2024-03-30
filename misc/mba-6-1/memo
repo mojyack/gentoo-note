@@ -1,8 +1,8 @@
-# no-bd-prochot
-ln -s $PWD/no-bd-prochot /usr/sbin
-ln -s $PWD/no-bd-prochot.service /etc/systemd/system
+# disable-bd-prochot
+ln -s $PWD/disable-bd-prochot /usr/sbin
+ln -s $PWD/disable-bd-prochot.service /etc/systemd/system
 systemctl daemon-reload
-systemctl enable --now no-bd-prochot
+systemctl enable --now disable-bd-prochot
 
 # fand
 ln -s $PWD/fand /usr/sbin

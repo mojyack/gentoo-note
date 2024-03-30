@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/bin/sh
 
 # disable 'BD PROCHOT' in MSR to avoid cpu throttling
 # https://apple.stackexchange.com/questions/380493/cpu-throttling-on-macbook-with-bad-battery-and-catalina
