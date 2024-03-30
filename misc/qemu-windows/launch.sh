@@ -8,7 +8,6 @@ virtiofs_sock=/tmp/qemu-virtiofs.sock
 
 doas chown mojyack:mojyack $own_files
 /usr/libexec/virtiofsd --socket-path=$virtiofs_sock --shared-dir=$HOME/working &
-systemctl --user start pipewire-pulse
 
 base=(
     -cpu host,kvm=off
