@@ -32,6 +32,10 @@ if [[ -e "$root/var/cache/distfiles" ]]; then
     try mount -o bind /var/cache/distfiles "$root/var/cache/distfiles"
     distfiles_mounted=1
 fi
+if [[ -e "$root/var/cache/binpkgs" ]]; then
+    try mount -o bind /var/cache/binpkgs "$root/var/cache/binpkgs"
+    binpkgs_mounted=1
+fi
 if [[ -e "$root/usr/src" ]]; then
     try mount -o bind /usr/src "$root/usr/src"
     src_mounted=1
@@ -52,6 +56,9 @@ retry_command() {
 
 if [[ $distfiles_mounted == 1 ]]; then
     retry_command umount "$root/var/cache/distfiles"
+fi
+if [[ $binpkgs_mounted == 1 ]]; then
+    retry_command umount "$root/var/cache/binpkgs"
 fi
 if [[ $src_mounted == 1 ]]; then
     retry_command umount "$root/usr/src"
