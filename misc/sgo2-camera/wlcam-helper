@@ -70,7 +70,7 @@ event_handler() {
 }
 
 open_wlcam() {
-    killall -SIGUSR1 wvkbd
+    killall -s 35 wvkbd
     swaymsg "workspace 8"
 
     ("$WLCAM" ${wlcam_args[@]}; killall v4l2-wlctl; swaymsg "workspace 1") &
