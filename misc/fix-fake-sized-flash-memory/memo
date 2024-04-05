@@ -1,0 +1,5 @@
+# install f3
+USE=extra emerge f3
+# check for the real size
+f3probe --destructive -t3 /dev/sdX
+# create gpt with any tool, using fakesize.cpp
