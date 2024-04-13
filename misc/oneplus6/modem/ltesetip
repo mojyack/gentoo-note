@@ -1,0 +1,24 @@
+#!/bin/zsh
+
+while read line; do
+    elms=( ${(z)line} )
+    key=${elms[1]}
+    value=${elms[3]}
+    if [[ $key == bearer.status.interface ]]; then
+        interface=$value
+    elif [[ $key == bearer.ipv4-config.address ]]; then
+        ipv4=$value
+    elif [[ $key == bearer.ipv4-config.prefix ]]; then
+        ipv4_pre=$value
+    elif [[ $key == bearer.ipv4-config.gateway ]]; then
+        gateway=$value
+    fi
+done <<< $(mmcli -b 1 --output-keyvalue)
+if [[ -z $interface || -z $ipv4 ||  -z $ipv4_pre || -z $gateway ]]; then
+    echo "required field missing, check for mmcli -b 1"
+    exit 1
+fi
+echo $interface $ipv4/$ipv4_pre $gateway
+
+ip a add $ipv4/$ipv4_pre dev $interface broadcast +
+ip r add default via $gateway dev $interface

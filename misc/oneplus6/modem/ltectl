@@ -1,0 +1,20 @@
+#!/bin/zsh
+
+set -e
+
+if [[ $(sv status /run/runit/services/modemmanager) != "run"* ]]; then
+    echo "ModemManager not running, initializing modem..."
+    ./lteboot
+fi
+
+if [[ $1 == "on" ]]; then
+    mmcli -m 0 -e
+    mmcli -m 0 --3gpp-set-initial-eps-bearer-settings='apn=rakuten.jp,ip-type=ipv4v6,allow-roaming=yes'
+    mmcli -m 0 --simple-connect='apn=rakuten.jp,operator-id=44011' --verbose
+    ./ltesetip
+elif [[ $1 == "off" ]]; then
+    mmcli -m 0 -d
+else
+    echo "unknown command"
+    exit 1
+fi

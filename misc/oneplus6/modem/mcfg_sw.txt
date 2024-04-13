@@ -1,0 +1,1 @@
+modem_a/image/modem_pr/mcfg/configs/mcfg_sw/generic/china/cu/commerci/volte/mcfg_sw.mbn
