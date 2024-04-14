@@ -1,0 +1,16 @@
+Disk /dev/sda: 116.11 GiB, 124671492096 bytes, 30437376 sectors
+Disk model: KLUDG4U1EA-B0C1
+Units: sectors of 1 * 4096 = 4096 bytes
+Sector size (logical/physical): 4096 bytes / 4096 bytes
+I/O size (minimum/optimal): 8192 bytes / 8192 bytes
+Disklabel type: gpt
+Disk identifier: 8E2EB5CF-52D6-44E8-AD8A-A443D9FCAFD9
+First usable LBA: 6
+Last usable LBA: 30437370
+Alternative LBA: 30437375
+Partition entries starting LBA: 2
+Allocated partition entries: 128
+Partition entries ending LBA: 5
+
+Device     Start      End  Sectors Type-UUID                            UUID                                 Name             Attrs
+/dev/sda1    256 30437370 30437115 0FC63DAF-8483-4772-8E79-3D69D8477DE4 D8E6753A-E694-66CC-F02F-D3030B86F5D2 Linux filesystem

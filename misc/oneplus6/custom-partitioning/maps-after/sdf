@@ -1,0 +1,19 @@
+Disk /dev/sdf: 32 MiB, 33554432 bytes, 8192 sectors
+Disk model: KLUDG4U1EA-B0C1
+Units: sectors of 1 * 4096 = 4096 bytes
+Sector size (logical/physical): 4096 bytes / 4096 bytes
+I/O size (minimum/optimal): 8192 bytes / 8192 bytes
+Disklabel type: gpt
+Disk identifier: 19E7C627-9CB8-4590-BF68-7851D62B8996
+First usable LBA: 6
+Last usable LBA: 8186
+Alternative LBA: 8191
+Partition entries starting LBA: 2
+Allocated partition entries: 128
+Partition entries ending LBA: 5
+
+Device     Start   End Sectors Type-UUID                            UUID                                 Name     Attrs
+/dev/sdf1     32   543     512 EBBEADAF-22C9-E33B-8F5D-0E81686A68CB 201DE276-236A-4F02-AA0F-A541B56F1CCD modemst1
+/dev/sdf2    544  1055     512 0A288B1F-22C9-E33B-8F5D-0E81686A68CB 0FF080D2-89EF-4D6C-967A-C3E8B2533BAF modemst2
+/dev/sdf3   1056  1567     512 638FF8E2-22C9-E33B-8F5D-0E81686A68CB 06BD96C4-C1C2-497E-8C4E-D7CC663F0F90 fsg
+/dev/sdf4   1568  1599      32 57B90A16-22C9-E33B-8F5D-0E81686A68CB DA7F2C01-6B1C-48E9-9B57-71607DC24745 fsc

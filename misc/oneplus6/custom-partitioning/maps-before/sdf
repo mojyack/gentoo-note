@@ -1,0 +1,21 @@
+Disk /dev/sdf: 32 MiB, 33554432 bytes, 8192 sectors
+Disk model: KLUDG4U1EA-B0C1
+Units: sectors of 1 * 4096 = 4096 bytes
+Sector size (logical/physical): 4096 bytes / 4096 bytes
+I/O size (minimum/optimal): 8192 bytes / 8192 bytes
+Disklabel type: gpt
+Disk identifier: 19E7C627-9CB8-4590-BF68-7851D62B8996
+First usable LBA: 6
+Last usable LBA: 8186
+Alternative LBA: 8191
+Partition entries starting LBA: 2
+Allocated partition entries: 32
+Partition entries ending LBA: 2
+
+Device       Start   End Sectors Type-UUID                            UUID                                 Name            Attrs
+/dev/sde1        6    31      26 6891A3B7-0CCC-4705-BB53-2673CAC193BD 5C7B24BE-FE54-513E-B96A-F369EB9538CA ALIGN_TO_128K_2 GUID:60
+/dev/sde2       32   543     512 EBBEADAF-22C9-E33B-8F5D-0E81686A68CB DC7CCB31-29E8-D9DE-36F5-87FF61D95FF3 modemst1
+/dev/sde3      544  1055     512 0A288B1F-22C9-E33B-8F5D-0E81686A68CB AEEB26C6-A59A-82C6-D3F8-4FA21270DCBE modemst2
+/dev/sde4     1056  1567     512 638FF8E2-22C9-E33B-8F5D-0E81686A68CB 31C0053E-C10B-1CA8-DBCD-D28FFB48DF22 fsg             GUID:60
+/dev/sde5     1568  1599      32 57B90A16-22C9-E33B-8F5D-0E81686A68CB 55F7E39B-5703-AB52-16FB-7A8710EDDCD9 fsc
+/dev/sde6     1600  8186    6587 00000000-0000-0000-0000-000000000000 9E829B94-8D5F-6D5E-63C2-263F4A30879C last_parti      GUID:60

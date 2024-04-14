@@ -1,0 +1,17 @@
+Disk /dev/sdd: 32 MiB, 33554432 bytes, 8192 sectors
+Disk model: KLUDG4U1EA-B0C1
+Units: sectors of 1 * 4096 = 4096 bytes
+Sector size (logical/physical): 4096 bytes / 4096 bytes
+I/O size (minimum/optimal): 8192 bytes / 8192 bytes
+Disklabel type: gpt
+Disk identifier: CFBF0DB3-9FF3-40FF-8635-A5F1D87222C0
+First usable LBA: 6
+Last usable LBA: 8186
+Alternative LBA: 8191
+Partition entries starting LBA: 2
+Allocated partition entries: 128
+Partition entries ending LBA: 5
+
+Device     Start   End Sectors Type-UUID                            UUID                                 Name Attrs
+/dev/sdd1     32    63      32 20A0C19C-286A-42FA-9CE7-F64C3226A794 A17D8A90-502A-4C91-B8D1-EBCCA8DEE575 cdt
+/dev/sdd2     64   319     256 0FC63DAF-8483-4772-8E79-3D69D8477DE4 C1332701-8F51-4310-BD17-6F52C5E44704 ddr

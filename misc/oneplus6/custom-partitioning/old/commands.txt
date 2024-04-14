@@ -1,0 +1,23 @@
+# init sde
+sgdisk -n  1:0:+128   -t  1:D69E90A5-4CAB-0071-F6DF-AB977F141A7F -c  1:aop_a       /dev/sde
+sgdisk -n  2:0:+512   -t  2:A053AA7F-40B8-4B1C-BA08-2F68AC71A4F4 -c  2:tz_a        /dev/sde
+sgdisk -n  3:0:+128   -t  3:E1A6A689-0C8D-4CC6-B4E8-55A4320FBD8A -c  3:hyp_a       /dev/sde
+sgdisk -n  4:0:+2048  -t  4:BD6928A1-4CE0-A038-4F3A-1495E3EDDFFB -c  4:abl_a       /dev/sde
+sgdisk -n  5:0:+128   -t  5:A11D2A7C-D82A-4C2F-8A01-1805240E6626 -c  5:keymaster_a /dev/sde
+sgdisk -n  6:0:+16384 -t  6:20117F86-E985-4357-B9EE-374BC1D8487D -c  6:boot_a      /dev/sde
+sgdisk -n  7:0:+128   -t  7:73471795-AB54-43F9-A847-4F72EA5CBEF5 -c  7:cmnlib_a    /dev/sde
+sgdisk -n  8:0:+128   -t  8:8EA64893-1267-4A1B-947C-7C362ACAAD2C -c  8:cmnlib64_a  /dev/sde
+sgdisk -n  9:0:+32    -t  9:F65D4B16-343D-4E25-AAFC-BE99B6556A6D -c  9:devcfg_a    /dev/sde
+sgdisk -n 10:0:+16    -t 10:21D1219F-2ED1-4AB4-930A-41A16AE75F7F -c 10:qupfw_a     /dev/sde
+sgdisk -n 11:0:+16    -t 11:4B7A15D6-322C-42AC-8110-88B7DA0C5D77 -c 11:vbmeta_a    /dev/sde
+sgdisk -n 12:0:+2048  -t 12:77036CD4-03D5-42BB-8ED1-37E5A88BAA34 -c 12:dtbo_a      /dev/sde
+sgdisk -n 13:0:+32    -t 13:02DB45FE-AD1B-4CB6-AECC-0042C637DEFA -c 13:storsec_a   /dev/sde
+sgdisk -n 14:0:+1     -t 14:65ADDCF4-0C5C-4D9A-AC2D-D90B5CBFCD03 -c 14:devinfo     /dev/sde
+sgdisk -n 15:0:+1     -t 15:77036CD4-03D5-42BB-8ED1-37E5A88BAA34 -c 15:boot_b      /dev/sde
+
+for i in {1..13}; do dd if=$i of=/dev/sde$i count=4096; done
+sgdisk $( for i in {1..8} {10..12}; do echo -A $i\:set\:48 -A $i\:set\:49 -A $i\:set\:50 -A $i\:set\:51 -A $i\:set\:52 -A $i\:set\:53 -A $i\:set\:54; done ) /dev/sde
+sgdisk $( for i in {9,13}; do echo -A $i\:set\:50 -A $i\:set\:54; done ) /dev/sde
+sgdisk -A 9:set:48 /dev/sde
+sgdisk -A 15:set:54 /dev/sde
+sgdisk $(for i in {1,2,4,5,7,8,11,14}; do echo -A $i\:set\:60; done) /dev/sde
