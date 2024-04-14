@@ -21,4 +21,5 @@ fi
 echo $interface $ipv4/$ipv4_pre $gateway
 
 ip a add $ipv4/$ipv4_pre dev $interface broadcast +
+sleep 0.5 # avoid "Error: Nexthop has invalid gateway."
 ip r add default via $gateway dev $interface
