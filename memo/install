@@ -160,6 +160,7 @@ usermod -aG wheel mojyack
 # additional groups
 usermod -aG video mojyack
 usermod -aG audio mojyack
+usermod -aG input mojyack
 usermod -aG kvm mojyack
 
 # if your computer is a local server:
