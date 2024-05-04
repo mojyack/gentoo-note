@@ -47,16 +47,18 @@ Also, it seems that partitions belonging to the inactive slot will have their ty
 
 # Partition attributes
 In GPT, all partitions have 64-bit attributes.  
-The important bits in Android are the 8 bits from 48 to 55 bits.  
+The important bits in Android are the 12 bits from bit-48 to bit-59.
 ```
-5554535251504948
-0 0 0 0 0 0 0 0
-        ^ ^ ^ ^ ACTIVE
-          ^SLOT ACTIVE
-  ^SUCCESS
-^UNBOOTABLE
+595857565554535251504948
+0 0 0 0 0 0 0 0 0 0 0 0
+              ^ ^ ^ ^ ACTIVE
+                ^SLOT ACTIVE
+          ^SUCCESS
+        ^UNBOOTABLE
+^ ^ ^ ^RETRY COUNT
 ```
-The 4 bits from 48 to 51 bits indicate whether that partition is active. In particular, bit 50 indicates whether the slot (a/b) is the currently used slot.  
+The 4 bits from bit-48 to bit-51 indicate whether that partition is active. In particular, bit-50 indicates whether the slot (a/b) is the currently used slot.  
+bit-56 to bit-59 is a boot retry count.  
 I am not sure what the remaining three bits mean, but it seems like they should all be set to 1.  
 Bit 54 is set by the OS when the OS boots successfully, indicating to the bootloader that the slot is operational.  
 If this bit is not set, the bootloader may automatically change the configuration to use a different slot.  
