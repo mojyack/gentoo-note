@@ -19,9 +19,10 @@ losetup -d /dev/loop?
 - Shift+F10 (run cmd)
 - run regedit
 - in HKEY_LOCAL_MACHINE\SYSTEM\Setup
-- right-click New, Key, LabConfig
+- create new key "LabConfig"
+- in LabConfig
 - New, DWORD (32-bit), BypassTPMCheck, 1
-- same for BypassRAMCheck and BypassSecureBootCheck
+- same for BypassSecureBootCheck (maybe also BypassCPUCheck and BypassRAMCheck)
 
 # fix INACCESSIBLE_BOOT_DEVICE
 ref: https://gist.github.com/Francesco149/dc156cfd9ecfc3659469315c45fa0f96
