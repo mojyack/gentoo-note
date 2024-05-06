@@ -32,6 +32,10 @@ drvload D:\viostor\w11\amd64\viostor.inf
 bcdboot C:\Windows
 ```
 
+# bypass network check on oobe
+- Shift+F10 (run cmd)
+- run oobe\BypassNRO.cmd
+
 # others
 https://github.com/ionuttbara/windows-defender-remover
 https://github.com/massgravel/Microsoft-Activation-Scripts
