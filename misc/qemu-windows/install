@@ -36,6 +36,10 @@ bcdboot C:\Windows
 - Shift+F10 (run cmd)
 - run oobe\BypassNRO.cmd
 
+# install virtiofs service
+- copy (virtio-win):\viofs\w11\amd64\* to C:\Program Files\Virtio-Win\VioFS\
+- run virtfs.cmd
+
 # others
 https://github.com/ionuttbara/windows-defender-remover
 https://github.com/massgravel/Microsoft-Activation-Scripts
