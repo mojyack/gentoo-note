@@ -12,6 +12,7 @@ https://github.com/billziss-gh/winfsp/releases/latest
 fallocate data -l 128M
 sgdisk -n 1:0: -t 1:0700 data
 losetup -f -P data
+mkfs.vfat -F32 /dev/loop?p1
 ...
 losetup -d /dev/loop?
 
