@@ -31,8 +31,8 @@ net=(
 )
 
 evdev=(
-    -object input-linux,id=kbd1,evdev=/dev/input/by-id/usb-Topre_Corporation_Realforce_87-event-kbd,grab_all=on,repeat=on
-    -object input-linux,id=mouse1,evdev=/dev/input/by-id/usb-Nordic_2.4G_Wireless_Receiver-if01-event-mouse
+    -object input-linux,id=kbd1,evdev=/dev/input/by-id/$input_keyboard,grab_all=on,repeat=on,grab-toggle=alt-alt
+    -object input-linux,id=mouse1,evdev=/dev/input/by-id/$input_mouse
 )
 
 drive=(

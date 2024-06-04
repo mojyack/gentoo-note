@@ -1,6 +1,10 @@
 # for base
 mem=8G
 
+# for input
+input_keyboard=usb-PFU_Limited_HHKB-Classic-event-kbd
+input_mouse=usb-Nordic_2.4G_Wireless_Receiver-if01-event-mouse
+
 # for gpu
 gpu_pci_id="41:00.0"
 gpu_rom="rom/rx550.rom"
