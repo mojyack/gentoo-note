@@ -1,0 +1,14 @@
+#!/bin/zsh
+
+devnode="/sys/class/rtc/rtc0/since_epoch"
+offset_file="/var/cache/rtc-offset"
+
+if [[ ! -f $devnode ]]; then
+    exit 1
+fi
+
+swclock=$(date --utc +%s)
+read hwclock < $devnode
+offset=$((swclock - hwclock))
+
+echo $offset > $offset_file
