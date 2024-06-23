@@ -1,12 +1,15 @@
 #!/bin/zsh
 
-CSI_NUM=0
-SENSOR_WIDTH=3264
-SENSOR_HEIGHT=2448
-WIDTH=3200
-HEIGHT=2100
-OV=""
-LENS=""
+csi_num=0
+sensor_width=3264
+sensor_height=2448
+width=3200
+height=2200
+
+wlcam_args=(
+    --video-codec vp9_vaapi
+    # --ffmpeg-debug
+)
 
 sensor_params=(
     "Red Balance"       1850
@@ -18,23 +21,17 @@ sensor_params=(
     "Analogue Gain"     1024
 )
 
+on_ready() {
+    swaymsg "splitv"
+
+    "$vcw_bin" $lens_dev &
+    sleep 0.1
+    "$vcw_bin" $sensor_dev &
+    sleep 0.1
+    swaymsg "move down;resize shrink height 84 px;"
+    sleep 0.1
+    swaymsg "focus up;resize shrink height 140 px;resize shrink width 80 px;" > /dev/null # supress "Error: Cannot resize any further"
+}
+
 source ~/bin/wlcam-helper
-
 open_wlcam
-apply_sensor_ctrl
-
-swaymsg "splitv"
-"$VCTRL" $LENS &
-sleep 0.1
-"$VCTRL" $OV &
-sleep 0.1
-swaymsg "
-move down;
-resize shrink height 84 px;
-"
-sleep 0.1
-swaymsg "
-focus up;
-resize shrink height 140 px;
-resize shrink width 112 px;
-" > /dev/null
