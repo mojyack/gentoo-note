@@ -22,15 +22,15 @@ sensor_params=(
 )
 
 on_ready() {
+    sleep 0.1
     swaymsg "splitv"
-
     "$vcw_bin" $lens_dev &
     sleep 0.1
     "$vcw_bin" $sensor_dev &
     sleep 0.1
-    swaymsg "move down;resize shrink height 84 px;"
+    swaymsg "move down;resize shrink height 20 px;"
     sleep 0.1
-    swaymsg "focus up;resize shrink height 140 px;resize shrink width 80 px;" > /dev/null # supress "Error: Cannot resize any further"
+    swaymsg "focus up;resize shrink height 140 px;resize grow width 18 px;" > /dev/null # supress "Error: Cannot resize any further"
 }
 
 source ~/bin/wlcam-helper

@@ -67,7 +67,7 @@ stdout_handler() {
 
 open_wlcam() {
     killall -s USR1 wvkbd
-    swaymsg "workspace 8"
+    swaymsg "workspace 8; splith;"
 
     $wlcam_bin ${wlcam_args[@]} | stdout_handler
 
