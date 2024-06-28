@@ -1,0 +1,4 @@
+# list manually installed packages
+apt-mark showmanual
+# mark as dependency
+apt-mark auto PKG...
