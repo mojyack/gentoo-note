@@ -31,7 +31,7 @@ net=(
 )
 
 evdev=(
-    -object input-linux,id=kbd1,evdev=/dev/input/by-id/$input_keyboard,grab_all=on,repeat=on,grab-toggle=alt-alt
+    -object input-linux,id=kbd1,evdev=/dev/input/by-id/$input_keyboard,grab_all=on,repeat=on,grab-toggle=ctrl-ctrl
     -object input-linux,id=mouse1,evdev=/dev/input/by-id/$input_mouse
 )
 
