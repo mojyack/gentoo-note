@@ -1,9 +1,11 @@
-dev=0000:41:00.0
+#!/bin/sh
+
+dev=$1
 
 cd /sys/bus/pci/drivers/vfio-pci
 echo $dev > unbind
 
-pushd /sys/bus/pci/devices/0000:41:00.0
+pushd /sys/bus/pci/devices/$dev
 echo 1 > enable
 echo 1 > rom
 cat rom > /tmp/vbios.rom
