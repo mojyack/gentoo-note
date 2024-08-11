@@ -5,13 +5,12 @@ list_packages() {
     packages=($3)
     for ((i = $1; i < ${#packages[@]}; i+=$2)) {
         package=${packages[i]}
-        for file in $(equery f $package); do
+        for file in $(qlist $package); do
             if [[ ! -f $file ]]; then
                 continue
             fi
-            if ldd "$file" 2>/dev/null | grep -q libstdc++; then
-                #echo file $file
-                echo $package
+            if ldd "$file" 2>/dev/null | grep -q libc++; then
+                echo $package $file
                 break
             fi
         done
@@ -19,7 +18,7 @@ list_packages() {
 }
 
 cores=$(grep -c '^processor' /proc/cpuinfo)
-packages=$(equery l '*/*')
+packages=$(qlist -I)
 for ((i = 0; i < $cores; i++)); do
     list_packages $i $cores "$packages" &
 done
