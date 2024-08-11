@@ -54,13 +54,13 @@ map-keys normal 52 /
 # map-keys normal 53 MouseLock
 # map-keys normal 54 Del
 # map-keys normal 55 LeftCtrl
-map-keys normal 56 LeftFn
-map-keys normal 57 LeftSuper
-map-keys normal 58 LeftAlt
+# map-keys normal 56 LeftFn
+# map-keys normal 57 LeftSuper
+# map-keys normal 58 LeftAlt
 map-keys normal 59 Space
 # map-keys normal 60 RightFn
 map-keys normal 61 RightAlt
-map-keys normal 62 RightCtrl
+# map-keys normal 62 RightCtrl
 # map-keys normal 63 LeftArrow
 # map-keys normal 64 DownArrow
 # map-keys normal 65 RightArrow
@@ -105,9 +105,9 @@ map-keys rightfn 50 Del
 # map-keys rightfn 53 Shift&Up
 # map-keys rightfn 54 BacklightLightness+
 # map-keys rightfn 55 Ctrl&CapsExchange
-map-keys rightfn 56 LeftFn
-map-keys rightfn 57 WinLock
-map-keys rightfn 58 Win/MacExchange
+# map-keys rightfn 56 LeftFn
+# map-keys rightfn 57 WinLock
+# map-keys rightfn 58 Win/MacExchange
 # map-keys rightfn 60 RightFn
 map-keys rightfn 65 BacklightLightness-
 map-keys leftfn 0 `
@@ -151,9 +151,9 @@ map-keys leftfn 51 End
 # map-keys leftfn 53 Shift&Up
 # map-keys leftfn 54 BacklightLightness+
 # map-keys leftfn 55 Ctrl&CapsExchange
-map-keys leftfn 56 LeftFn
-map-keys leftfn 57 WinLock
-map-keys leftfn 58 Win/MacExchange
+# map-keys leftfn 56 LeftFn
+# map-keys leftfn 57 WinLock
+# map-keys leftfn 58 Win/MacExchange
 # map-keys leftfn 60 RightFn
 map-keys leftfn 65 BacklightLightness-
 
@@ -196,4 +196,15 @@ map-keys rightfn 38 PageUp
 map-keys rightfn 51 PageDown
 
 # use left ctrl to qemu switch
-map-keys leftfn 55 LeftCtrl RightCtrl
+map-keys normal  55 LeftFn
+map-keys rightfn 55 LeftFn
+map-keys leftfn  55 LeftFn
+map-keys normal  56 LeftSuper
+map-keys rightfn 56 LeftSuper
+map-keys leftfn  56 LeftSuper
+map-keys normal  57 LeftAlt
+map-keys rightfn 57 LeftAlt
+map-keys leftfn  57 LeftAlt
+map-keys normal  58 RightCtrl
+map-keys rightfn 58 RightCtrl
+map-keys leftfn  58 RightCtrl
