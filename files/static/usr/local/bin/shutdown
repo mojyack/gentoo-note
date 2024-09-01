@@ -1,2 +1,3 @@
 #!/bin/sh
-exec runit-init 0
+kill -USR1 1
+exec fusermount3 -u /run/daemons
