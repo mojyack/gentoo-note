@@ -2,11 +2,6 @@
 
 trigger="/dev/input/by-path/platform-c440000.spmi-platform-c440000.spmi:pmic@0:pon@800:pwrkey-event"
 wait_bin=${0:a:h}/wait
-ignore_commands=(
-    # freezing pipewire sometimes causes audio glitches
-    pipewire
-    pipewire-pulse
-)
 
 stopped=()
 
@@ -25,13 +20,6 @@ for proc in */; do
     stat=( ${(z)stat} )
     state=${stat[3]}
     if [[ $state == "T" ]]; then
-        popd
-        continue
-    fi
-
-    read cmdline < cmdline
-    cmdline=${cmdline[1,-2]} # remove last null
-    if (( $ignore_commands[(Ie)$cmdline] != 0 )); then
         popd
         continue
     fi
