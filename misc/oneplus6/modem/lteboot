@@ -10,7 +10,7 @@ qmicli -d qrtr://0 --pdc-activate-config=software,D3:67:58:EF:63:25:D2:E5:82:43:
 qmicli -d qrtr://0 --uim-change-provisioning-session=activate=no,session-type=primary-gw-provisioning || true # not critical
 qmicli -d qrtr://0 --uim-change-provisioning-session=slot=1,activate=yes,session-type=primary-gw-provisioning,aid=A0:00:00:00:87:10:02:FF:81:FF:09:89:09:06:00:00
 # start mm
-sv up /run/runit/services/modemmanager
+echo up > /run/daemons/modemmanager/state
 # wait for modem to show up
 while ! mmcli -m 0 > /dev/null 2>&1; do
     echo "waiting for modem..."

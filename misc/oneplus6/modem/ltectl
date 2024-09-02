@@ -2,7 +2,7 @@
 
 set -e
 
-if [[ $(sv status /run/runit/services/modemmanager) != "run"* ]]; then
+if [[ $(</run/daemons/modemmanager/state) != up ]]; then
     echo "ModemManager not running, initializing modem..."
     ./lteboot
 fi
