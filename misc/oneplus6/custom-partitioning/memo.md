@@ -92,7 +92,7 @@ If only one stot will be used, one can be erased.
 There are two partitions in the LU, `xbl` and `xbl_config`, but there seems to be data hidden outside the partitions, so simply copying the partitions did not work.  
 If you want to swap sdb and sdc, you have to clone the entire LU.
 ## sdd
-This LU has a `cdt` partition and a `ddr` partition.  
+This LU has a `cdt(Configure Data Table)` partition and a `ddr` partition.  
 These seem to store RAM settings and are essential for boot.  
 It is possible to recreate the partition table, but the `cdt` and `ddr` partitions must be placed on a fixed sector.
 ## sde
