@@ -2,13 +2,13 @@
 
 set -e
 
+# initialize sim card
+qmicli -d qrtr://0 --uim-change-provisioning-session=activate=no,session-type=primary-gw-provisioning || true # not critical
+qmicli -d qrtr://0 --uim-change-provisioning-session=slot=1,activate=yes,session-type=primary-gw-provisioning,aid=A0:00:00:00:87:10:02:FF:81:FF:09:89:09:06:00:00
 # load modem config
 modem_config="mcfg_sw.mbn"
 qmicli -d qrtr://0 --pdc-load-config=mcfg_sw.mbn
 qmicli -d qrtr://0 --pdc-activate-config=software,D3:67:58:EF:63:25:D2:E5:82:43:0B:F8:E4:C4:58:11:00:94:04:AA
-# initialize sim card
-qmicli -d qrtr://0 --uim-change-provisioning-session=activate=no,session-type=primary-gw-provisioning || true # not critical
-qmicli -d qrtr://0 --uim-change-provisioning-session=slot=1,activate=yes,session-type=primary-gw-provisioning,aid=A0:00:00:00:87:10:02:FF:81:FF:09:89:09:06:00:00
 # start mm
 echo up > /run/daemons/modemmanager/state
 # wait for modem to show up
