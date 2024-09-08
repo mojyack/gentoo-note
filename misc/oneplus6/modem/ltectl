@@ -12,7 +12,9 @@ if [[ $1 == "on" ]]; then
     mmcli -m 0 --3gpp-set-initial-eps-bearer-settings='apn=rakuten.jp,ip-type=ipv4v6,allow-roaming=yes'
     mmcli -m 0 --simple-connect='apn=rakuten.jp,operator-id=44011' --verbose
     ./ltesetip
+    echo up > /run/daemons/81voltd/state
 elif [[ $1 == "off" ]]; then
+    echo down > /run/daemons/81voltd/state
     mmcli -m 0 -d
 else
     echo "unknown command"
