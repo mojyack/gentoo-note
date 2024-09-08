@@ -1,0 +1,65 @@
+#!/bin/zsh
+
+soundcard="alsa_card._sys_devices_platform_sound_sound_card0"
+
+# $1 vid
+wait_for_finish() {
+    echo "call started"
+    echo "press enter to finish call"
+    read
+    mmcli -m 0 -o $1 --hangup
+}
+
+# $1 number
+make_call() {
+    vid=$(mmcli -m 0 --voice-create-call number=$1 | grep -Eo "Call/[0-9]+" | grep -oE "[0-9]+")
+    mmcli -m 0 -o $vid --start
+    wait_for_finish $vid
+}
+
+# ==== q6voiced callbacks ====
+
+on_call_added() {
+    vid=$(mmcli -m 0 --voice-list-calls -a | grep -Eo '[0-9]+ incoming \(ringing-in\)' | grep -Eo '[0-9]+')
+    if [[ -z $vid ]]; then
+        exit 0
+    fi
+
+    number=$(mmcli -m 0 -o $vid -K | grep call.properties.number | cut -d ':' -f2 | tr -d  ' ')
+
+    echo "phone call from $number"
+    echo "accept? (y/N)"
+    read answer
+
+    if [[ $answer != "y" ]]; then
+        mmcli -m 0 -o $vid --hangup
+        echo "rejected"
+        return
+    fi
+
+    mmcli -m 0 -o $vid --accept
+    echo "accepted"
+    wait_for_finish $vid
+}
+
+on_voice_start() {
+    pactl set-card-profile "$soundcard" "Voice Call"
+}
+
+on_voice_stop() {
+    pactl set-card-profile "$soundcard" "HiFi"
+}
+
+# ==== main ====
+
+if [[ $1 == "make-call" ]]; then
+    make_call "$2"
+elif [[ $1 == "call-added" ]]; then
+    alacritty -e $0 "call-added-prompt" &!
+elif [[ $1 == "call-added-prompt" ]]; then
+    on_call_added
+elif [[ $1 == "voice-start" ]]; then
+    on_voice_start
+elif [[ $1 == "voice-stop" ]]; then
+    on_voice_stop
+fi
