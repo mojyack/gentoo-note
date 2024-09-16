@@ -20,3 +20,7 @@ own_files=(
     /dev/input/by-id/usb-Nordic_2.4G_Wireless_Receiver-if01-event-mouse
     /sys/bus/pci/devices/0000:$gpu_pci_id/config
 )
+
+qemu_args=(
+    # additional arguments
+)

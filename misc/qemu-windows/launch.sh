@@ -83,4 +83,4 @@ stdio=(
     -serial mon:stdio
 )
  
-qemu-system-x86_64 $base $efi $evdev $gpu $audio $net $drive $virtiofs
+qemu-system-x86_64 $base $efi $evdev $gpu $audio $net $drive $virtiofs $qemu_args
