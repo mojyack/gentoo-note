@@ -165,18 +165,18 @@ map-keys leftfn 54 RightFn
 map-keys rightfn 54 RightFn
 
 # mouse
-map-keys normal 53 MouseMouseUp
-map-keys normal 63 MouseMouseLeft
-map-keys normal 64 MouseMouseDown
-map-keys normal 65 MouseMouseRight
+map-keys rightfn 53 MouseMouseUp
+map-keys rightfn 63 MouseMouseLeft
+map-keys rightfn 64 MouseMouseDown
+map-keys rightfn 65 MouseMouseRight
 map-keys normal 60 MouseKeyMiddle
 map-keys normal 61 MouseKeyRight
 map-keys normal 62 MouseKeyLeft
 
-map-keys rightfn 53 UpArrow
-map-keys rightfn 63 LeftArrow
-map-keys rightfn 64 DownArrow
-map-keys rightfn 65 RightArrow
+map-keys normal 53 UpArrow
+map-keys normal 63 LeftArrow
+map-keys normal 64 DownArrow
+map-keys normal 65 RightArrow
 
 # swap backspace
 map-keys normal 14 \
