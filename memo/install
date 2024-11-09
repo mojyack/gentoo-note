@@ -162,6 +162,7 @@ usermod -aG video mojyack
 usermod -aG audio mojyack
 usermod -aG input mojyack
 usermod -aG kvm mojyack
+usermod -aG usb mojyack
 
 # if your computer is a local server:
     cp files/rsyncd.conf /etc/
