@@ -1,0 +1,27 @@
+#!/bin/zsh
+
+if [[ $# != 1 ]]; then
+    exit 1
+fi
+
+intel="/sys/class/backlight/intel_backlight/brightness"
+gamma="/tmp/brightness/DSI-1"
+
+if [[ $(stat -c "%G" $intel) != "wheel" ]]; then
+    doas chgrp wheel $intel
+    doas chmod g+w $intel
+fi
+
+intel_current=$(<$intel)
+gamma_current=$(<$gamma)
+
+brightness_cur=$(( $intel_current + $gamma_current - 100 ))
+brightness_new=$(( $brightness_cur + $1 ))
+
+if (( $brightness_new > 0 )); then
+    echo 100 > $gamma
+    echo $brightness_new > $intel
+else
+    echo $(( $brightness_new + 100 )) > $gamma
+    echo 1 > $intel # echo 0 breaks i915 after suspend exit
+fi

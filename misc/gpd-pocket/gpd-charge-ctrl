@@ -1,0 +1,29 @@
+#!/bin/zsh
+set -e
+
+batdir="/sys/class/power_supply/max170xx_battery"
+chgdir="/sys/class/power_supply/bq24190-charger"
+
+if [[ $1 == "on" ]] {
+    echo 1 > ${chgdir}/f_chg_config
+    exit 0
+}
+
+full=$(<${batdir}/charge_full)
+now=$(<${batdir}/charge_now)
+chg=$(<${chgdir}/f_chg_config)
+pert=$((100 * $now / $full))
+
+echo $full $now $chg
+
+if (( $pert >= 80 )) {
+    if [[ $chg == "1" ]] {
+        echo "off"
+        echo 0 > ${chgdir}/f_chg_config
+    }
+} elif (( $pert < 60 )) {
+    if [[ $chg == "0" ]] {
+        echo "on"
+        echo 1 > ${chgdir}/f_chg_config
+    }
+}
