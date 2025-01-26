@@ -13,8 +13,8 @@ PRECISION=10000
 cd /sys/devices/platform/applesmc.768
 
 echo 1 > fan1_manual
-read FAN_MAX < fan1_max
-read FAN_MIN < fan1_min
+FAN_MAX=$(<fan1_max)
+FAN_MIN=$(<fan1_min)
 FAN_RANGE=$(( $FAN_MAX-$FAN_MIN ))
 
 # builtin sleep setup
@@ -24,7 +24,7 @@ exec 9<>$t
 rm $t
 
 while true; do
-    read temp < temp14_input
+    temp=$(<temp14_input)
     if (( $temp < $TEMP_MIN )); then
         fan=0
     elif (( $temp > $TEMP_MAX )); then
