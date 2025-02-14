@@ -2,4 +2,4 @@
 emerge -auD -bk --keep-going -j24 @world
 
 # llvm
-emerge -auk1 -j24 sys-libs/compiler-rt sys-libs/compiler-rt-sanitizers sys-devel/clang-runtime sys-libs/llvm-libunwind sys-devel/lld sys-devel/lld-toolchain-symlinks
+emerge -auk1 -j24 compiler-rt compiler-rt-sanitizers clang-runtime llvm-runtimes/libunwind lld lld-toolchain-symlinks
