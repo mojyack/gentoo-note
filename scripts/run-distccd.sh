@@ -22,22 +22,18 @@ llvm_slot=$(llvm-config --version | cut -d . -f 1)
 # setup cross tools
 mkdir -p "cross"
 
-## clang
-echo "#!/bin/sh
-exec \"$(which clang)\" --target=$tuple \"\$@\"" > cross/$tuple-clang
-echo "#!/bin/sh
-exec \"$(which clang++)\" --target=$tuple \"\$@\"" > cross/$tuple-clang++
-for file in cross/*clang*; {
-    chmod +x "$file"
-    ln -s "${file:t}" "$file-$llvm_slot"
+# $1 clang/clang++
+create_file() {
+    cc=$1
+    echo "#!/bin/sh\nexec \"$(which $cc)\" --target=$tuple \"\$@\"" > cross/$tuple-$cc
+    chmod +x "cross/$tuple-$cc"
+    ln -s "$tuple-$cc" "cross/$tuple-$cc-$llvm_slot"
+    ln -s "$tuple-$cc" "cross/$cc-$llvm_slot"
 }
+create_file clang
+create_file clang++
 
-# distcc
-doas ln -s /usr/bin/distccd /usr/lib/distcc/$tuple-clang
-doas ln -s /usr/bin/distccd /usr/lib/distcc/$tuple-clang++
-doas ln -s /usr/bin/distccd /usr/lib/distcc/$tuple-clang-$llvm_slot
-doas ln -s /usr/bin/distccd /usr/lib/distcc/$tuple-clang++-$llvm_slot
-
+# run distccd
 args=(
     --daemon
     --log-file=/tmp/distccd
@@ -50,11 +46,6 @@ PATH=$PWD/cross:$PATH exec distccd $args &
 echo ok
 read
 killall distccd
-
-doas unlink /usr/lib/distcc/$tuple-clang
-doas unlink /usr/lib/distcc/$tuple-clang++
-doas unlink /usr/lib/distcc/$tuple-clang-$llvm_slot
-doas unlink /usr/lib/distcc/$tuple-clang++-$llvm_slot
 
 rm -r cross
 
