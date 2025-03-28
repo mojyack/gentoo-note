@@ -9,6 +9,8 @@ if [[ $1 == arm ]]; then
     tuple="armv6j-unknown-linux-musleabihf"
 elif [[ $1 == arm64 || $1 == aarch64 ]]; then
     tuple="aarch64-unknown-linux-musl"
+elif [[ $1 == amd64 ]]; then
+    tuple="x86_64-pc-linux-musl"
 elif [[ $1 == ppc64 || $1 == powerpc64 ]]; then
     tuple="powerpc64-unknown-linux-musl"
 else
