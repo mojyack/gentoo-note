@@ -1,0 +1,6 @@
+# enable 80211a
+curl -L -o /lib/firmware/brcm/brcmfmac43602-pcie.txt "https://bugzilla.kernel.org/attachment.cgi?id=290569"
+sed -i 's/ccode=00/ccode=ALL/' /lib/firmware/brcm/brcmfmac43602-pcie.txt
+
+# disable broken hard suspend
+ln -s $PWD/suspend-hook /usr/local/bin
