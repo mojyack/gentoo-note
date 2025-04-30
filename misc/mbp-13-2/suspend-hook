@@ -10,10 +10,10 @@ swaysock=$(ls /tmp/user/1000 | grep -E 'sway-ipc.*sock' 2>/dev/null)
 
 if [[ -n $swaysock ]]; then
     dpms_on() {
-        swaymsg -s "$swaysock" "output eDP-1 dpms on"
+        swaymsg -s "/tmp/user/1000/$swaysock" "output eDP-1 dpms on"
     }
     dpms_off() {
-        swaymsg -s "$swaysock" "output eDP-1 dpms off"
+        swaymsg -s "/tmp/user/1000/$swaysock" "output eDP-1 dpms off"
     }
 else
     dpms_on() {
