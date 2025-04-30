@@ -1,3 +1,7 @@
+# notes
+- small ESP (<300MB?) in internal ssd is not recognized by the firmware
+- modifying some EFI variables such as "ios-boot-in-progress-*" may disable touchbar functionality.
+
 # enable 80211a
 curl -L -o /lib/firmware/brcm/brcmfmac43602-pcie.txt "https://bugzilla.kernel.org/attachment.cgi?id=290569"
 sed -i 's/ccode=00/ccode=ALL/' /lib/firmware/brcm/brcmfmac43602-pcie.txt
