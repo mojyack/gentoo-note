@@ -1,0 +1,19 @@
+#!/bin/zsh
+
+# this script must be run as normal user
+if [[ $EUID == 0 ]]; then
+    doas -u mojyack $0
+    exit 1 # prevent hardware suspend
+fi
+
+
+soundcard="alsa_card._sys_devices_platform_sound_sound_card0"
+trigger="/dev/input/by-path/platform-c440000.spmi-platform-c440000.spmi:pmic@0:pon@800:pwrkey-event"
+
+~/bin/toggle-display-touch
+pactl set-card-profile "$soundcard" off
+
+doas ~/build/gentoo-note/scripts/blizzard/blizzard.sh "$trigger"
+
+~/bin/toggle-display-touch
+pactl set-card-profile "$soundcard" HiFi
