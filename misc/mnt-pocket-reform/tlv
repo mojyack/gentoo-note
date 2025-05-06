@@ -1,0 +1,44 @@
+#!/bin/zsh
+# tlv reset
+# tlv speaker(0|1) headphone(0|1)
+
+if [[ $1 == reset ]]; then
+    seq=(
+        'Speaker' on
+        'Speaker Analog' 127
+        'Speaker Driver' 0
+        'Speaker Driver' on
+        'DAC' 127
+        'DAC Left Input' 'Left Data'
+        'DAC Right Input' 'Right Data'
+        'Output Left From Left DAC' on
+        'Output Right From RIght DAC' on
+        'HP Analog' 78
+        'HP Driver' 0
+        'HP Left' off
+        'HP Right' off
+        'HP Output Driver Power-On time' 304ms
+        'HP Output Driver Ramp-up step' 3.9ms
+    )
+else
+    seq=()
+    if [[ $1 == 1 ]]; then
+        seq+=('Speaker Driver' on)
+    else
+        seq+=('Speaker Driver' off)
+    fi
+    if [[ $2 == 1 ]]; then
+        seq+=('HP Left' on 'HP Right' on)
+    else
+        seq+=('HP Left' off 'HP Right' off)
+    fi
+fi
+
+i=1
+while [[ -n ${seq[$i]} ]]; do
+    k=${seq[$i]}
+    v=${seq[$(($i+1))]}
+    echo set \"$k\" \"$v\"
+    i=$((i+2))
+done | amixer -sq -c0
+

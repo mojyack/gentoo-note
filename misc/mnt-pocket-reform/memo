@@ -1,0 +1,4 @@
+# sound control
+ln -s $PWD/tlv ~/bin
+# disable broken hard suspend
+ln -s $PWD/suspend-hook /usr/local/bin

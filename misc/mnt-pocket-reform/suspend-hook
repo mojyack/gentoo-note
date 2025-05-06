@@ -1,0 +1,34 @@
+#!/bin/zsh
+
+scripts=/home/mojyack/build/gentoo-note/scripts
+
+kbd="/dev/input/by-id/usb-MNT_Pocket_Reform_Input_1.0_DE625492038B742D-event-kbd"
+brightness="/sys/class/backlight/mnt_pocket_reform_backlight/brightness"
+
+if [[ -n $SWAYSOCK ]]; then
+    dpms_on() {
+        swaymsg "output DSI-1 dpms on"
+    }
+    dpms_off() {
+        swaymsg "output DSI-1 dpms off"
+    }
+else
+    dpms_on() {
+        echo 1 > /sys/class/graphics/fb0/blank
+    }
+    dpms_off() {
+        echo 0 > /sys/class/graphics/fb0/blank
+    }
+fi
+
+dpms_off
+
+bak=$(<$brightness)
+echo 0 > $brightness
+
+$scripts/blizzard/blizzard.sh "$kbd"
+
+dpms_on
+echo $bak > $brightness
+
+exit 1 # prevent hardware suspend
