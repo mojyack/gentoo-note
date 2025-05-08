@@ -1,0 +1,11 @@
+# partition layout
+0(+0)~33            gpt
+64(+32KiB)~16383    spl
+16384(+8MiB)~32767  u-boot
+
+sgdisk -Z $sd
+sgdisk -a 1 -n 2:64:16383 -c 2:idbloader $sd
+sgdisk -a 1 -n 3:16384:32767 -c 3:u-boot $sd
+sgdisk -a 1 -n 1:0: -c 1:rootfs $sd
+mkfs.ext4 -m 0 ${sd}p1
+
