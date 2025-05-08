@@ -1,0 +1,9 @@
+
+# uart output
+#setenv bootargs "${bootargs} console=ttyS2,1500000"
+# general args
+setenv bootargs "${bootargs} console=tty1 root=PARTUUID=2e93fdc1-6b41-43fc-a137-6702687f5d63 rw loglevel=3 mitigations=off"
+
+load ${devtype} ${devnum}:${bootpart} ${kernel_addr_r} /boot/vmlinuz
+load ${devtype} ${devnum}:${bootpart} ${fdt_addr_r}    /boot/dtb
+booti ${kernel_addr_r} - ${fdt_addr_r}

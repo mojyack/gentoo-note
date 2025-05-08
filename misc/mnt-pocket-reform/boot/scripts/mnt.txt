@@ -1,0 +1,14 @@
+
+# board specific
+setenv bootargs "${bootargs} clk_ignore_unused cma=256M swiotlb=65535"
+# terminal setup
+setenv bootargs "${bootargs} fbcon=rotate:3 fbcon=font:TER16x32"
+# uart output
+#setenv bootargs "${bootargs} console=ttyS2,1500000"
+# general args
+setenv bootargs "${bootargs} console=tty1 root=PARTUUID=2e93fdc1-6b41-43fc-a137-6702687f5d63 rw loglevel=3 mitigations=off"
+
+load ${devtype} ${devnum}:${bootpart} ${kernel_addr_r}  /boot/mnt/vmlinuz-6.12.25-mnt-reform-arm64
+load ${devtype} ${devnum}:${bootpart} ${fdt_addr_r}     /boot/mnt/rk3588-mnt-pocket-reform.dtb
+load ${devtype} ${devnum}:${bootpart} ${ramdisk_addr_r} /boot/mnt/initrd.img-6.12.25-mnt-reform-arm64
+booti ${kernel_addr_r} ${ramdisk_addr_r}:${filesize} ${fdt_addr_r}
