@@ -2,4 +2,12 @@
 emerge -auD -bk --keep-going -j24 @world
 
 # llvm
-emerge -auk1 -j24 compiler-rt compiler-rt-sanitizers clang-runtime llvm-runtimes/libunwind lld lld-toolchain-symlinks
+pkgs=(
+    llvm-runtimes/compiler-rt
+    llvm-runtimes/compiler-rt-sanitizers
+    llvm-runtimes/libunwind
+    llvm-core/clang-runtime
+    llvm-core/lld
+    llvm-core/lld-toolchain-symlinks
+)
+emerge -avuk1 -j24 ${pkgs[@]}
