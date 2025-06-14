@@ -1,0 +1,1 @@
+export MOZBUILD_STATE_PATH=/tmp/firefox-state

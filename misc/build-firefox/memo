@@ -1,0 +1,11 @@
+branch=FIREFOX_139_0_1_RELEASE
+patches=firefox-139-patches-03.tar.xz
+files=$PWD/files
+
+git clone --depth=1 -b $branch https://github.com/mozilla-firefox/firefox
+curl https://dev.gentoo.org/~juippis/mozilla/patchsets/$patches | tar -xvJ
+cd firefox
+for patch in ../firefox-patches/*.patch $files/*.patch; do patch -p1 < $patch && git commit -am "patch $patch"; done
+source $files/env
+./march build
+/tmp/firefox-build/dist/bin/firefox

@@ -1,0 +1,24 @@
+From 83ad3f53ae798262ee952cd4f2f286d88e5e332d Mon Sep 17 00:00:00 2001
+From: mojyack <mojyack@gmail.com>
+Date: Thu, 12 Jun 2025 23:08:59 +0900
+Subject: [PATCH 3/3] fix int32_t
+
+---
+ xpcom/base/nsVersionComparator.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/xpcom/base/nsVersionComparator.h b/xpcom/base/nsVersionComparator.h
+index 32ea620583..83bbe392e4 100644
+--- a/xpcom/base/nsVersionComparator.h
++++ b/xpcom/base/nsVersionComparator.h
+@@ -14,6 +14,7 @@
+ #include <stdlib.h>
+ #include <string.h>
+ #include <assert.h>
++#include <stdint.h>
+ #if defined(XP_WIN) && !defined(UPDATER_NO_STRING_GLUE_STL)
+ #  include <wchar.h>
+ #  include "nsString.h"
+-- 
+2.49.0
+
