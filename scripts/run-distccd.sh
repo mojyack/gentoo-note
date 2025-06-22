@@ -31,8 +31,9 @@ create_file() {
     cc=$1
     echo "#!/bin/sh\nexec \"$(which $cc-$llvm_slot)\" --target=$tuple -Wno-gnu-line-marker \"\$@\"" > cross/$tuple-$cc
     chmod +x "cross/$tuple-$cc"
-    ln -s "$tuple-$cc" "cross/$tuple-$cc-$llvm_slot"
+    ln -s "$tuple-$cc" "cross/$cc"
     ln -s "$tuple-$cc" "cross/$cc-$llvm_slot"
+    ln -s "$tuple-$cc" "cross/$tuple-$cc-$llvm_slot"
 }
 create_file clang
 create_file clang++
