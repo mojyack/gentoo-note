@@ -19,7 +19,9 @@ else
 fi
 
 clang_base="$(realpath $(clang -print-resource-dir))"
-llvm_slot=$(llvm-config --version | cut -d . -f 1)
+if [[ -z $llvm_slot ]]; then
+    llvm_slot=$(llvm-config --version | cut -d . -f 1)
+fi
 
 # setup cross tools
 mkdir -p "cross"
