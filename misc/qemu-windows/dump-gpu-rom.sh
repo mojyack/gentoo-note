@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 dev=$1
 
 cd /sys/bus/pci/drivers/vfio-pci
