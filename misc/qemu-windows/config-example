@@ -24,3 +24,16 @@ own_files=(
 qemu_args=(
     # additional arguments
 )
+
+# usb passthrough
+#qemu_args=(
+#    -usb
+#    -device usb-host,hostbus=1,hostport=3
+#)
+
+# bind vfio-pci manually
+#for dev in /sys/kernel/iommu_groups/$gpu_iommu_group/devices/*; do
+#    echo "vfio-pci" | doas tee $dev/driver_override
+#    echo ${dev:t} | doas tee $dev/driver/unbind
+#    echo ${dev:t} | doas tee /sys/bus/pci/drivers/vfio-pci/bind
+#done
