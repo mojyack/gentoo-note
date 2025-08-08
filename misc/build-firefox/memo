@@ -8,4 +8,4 @@ cd firefox
 for patch in ../firefox-patches/*.patch $files/*.patch; do patch -p1 < $patch && git commit -am "patch $patch"; done
 source $files/env
 ./march build
-/tmp/firefox-build/dist/bin/firefox
+LD_LIBRARY_PATH=/tmp/firefox-build/dist/bin /tmp/firefox-build/dist/bin/firefox
