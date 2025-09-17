@@ -27,7 +27,7 @@ efi=(
 
 net=(
     -net nic,model=virtio-net-pci
-    -net user,hostfwd=tcp::5555-:5555
+    -net user,hostfwd=tcp::5555-:5555,hostfwd=udp::5555-:5555
 )
 
 evdev=(
