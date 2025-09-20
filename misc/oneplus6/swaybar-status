@@ -1,0 +1,107 @@
+#!/bin/zsh
+# $1 1 or 2 or transform
+
+status_file="/tmp/swaybar-status"
+
+# $1 normal|90|180|270
+transform_screen() {
+    read transform < $status_file
+    if [[ $transform == $1 ]]; then
+        return 0
+    fi
+    echo $1 > $status_file
+    swaymsg "output DSI-1 transform $1" > /dev/null
+    if [[ $1 == "normal" || $1 == "180" ]]; then
+        swaymsg "bar mode dock 1" > /dev/null
+    else
+        swaymsg "bar mode invisible 1" > /dev/null
+    fi
+}
+
+if [[ $1 == "transform" ]]; then
+    transform_screen $2 
+fi
+
+source ~/bin/swaybar-status-helper
+
+# $1 name
+# $2 text
+print_empty() {
+    echo '{'
+    echo '"full_text":' '"'$2'",'
+    echo '"name":'      "\"$1\","
+    echo '},'
+}
+
+# $1 name
+print_datetime_short() {
+    echo '{'
+    echo '"full_text":' '"'$(date "+%m-%d %H:%M")'",'
+    echo '"name":'      "\"$1\","
+    echo '},'
+}
+
+get_screen_transform() {
+    arr=($(swaymsg -r -t get_outputs | grep transform))
+    arr=(${(z)arr[2]//\"/ })
+    echo ${arr[1]}
+}
+
+if [[ $1 == 1 ]]; then
+    print_status() {
+        print_load_average "cpuload"
+        print_empty "padding" "                                                        "
+        print_network_status "network"
+        print_screen_brightness "backlight" "ae94000.dsi.0"
+        print_battery_status "battery" "bq27411-0" "charge"
+    }
+elif [[ $1 == 2 ]]; then
+    print_status_normal() {
+        print_memory_usage "memory"
+        print_empty "padding" "                                               "
+        print_speeker_volume "volume"
+        print_cputemp "temp" "/sys/class/thermal/thermal_zone1/temp"
+        print_datetime_short "clock"
+    }
+    print_status_portlate() {
+        print_load_average "cpuload"
+        print_memory_usage "memory"
+        print_network_status "network"
+        print_screen_brightness "backlight" "ae94000.dsi.0"
+        print_speeker_volume "volume"
+        print_cputemp "temp" "/sys/class/thermal/thermal_zone1/temp"
+        print_battery_status "battery" "bq27411-0" "charge"
+        print_datetime "clock"
+    }
+    print_status() {
+        read transform < $status_file
+        if [[ $transform == "normal" || $transform == "180" ]]; then
+            print_status_normal
+        else
+            print_status_portlate
+        fi
+    }
+    get_screen_transform > $status_file
+fi
+
+on_click() {
+    if [[ $1 == "cpuload" || $1 == "memory" ]]; then
+        # FIXME
+        killall wvkbd
+        read transform < $status_file
+        if [[ $transform == "normal" ]]; then
+            transform_screen "270"
+        else
+            transform_screen "normal"
+        fi
+    # sway sometimes send '[' on startup
+    elif [[ $1 != "[" ]]; then
+        switch_wvkbd
+    fi
+}
+
+swaybar_main 1 &
+
+click_handler_main 1 0
+
+return 0
