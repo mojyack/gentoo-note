@@ -6,7 +6,7 @@ pkgs=(
     llvm-runtimes/compiler-rt
     llvm-runtimes/compiler-rt-sanitizers
     llvm-runtimes/libunwind
-    llvm-core/clang-runtime
+    llvm-runtimes/clang-runtime
     llvm-core/lld
     llvm-core/lld-toolchain-symlinks
 )
