@@ -1,0 +1,24 @@
+# needs arch container
+doas pacman -S arm-none-eabi-{gcc,newlib} zip
+
+git clone https://github.com/Rockbox/rockbox.git
+mkdir build
+cd build
+../tools/configure --target=22 --type=n --compiler-prefix=arm-none-eabi-
+make
+make zip
+
+# in gentoo
+ipod=/dev/sdX
+# flash rockbox
+pushd utils/ipodpatcher
+make CC=clang
+doas ./ipodpatcher $ipod -rf /path/to/osos-backup.ipod
+doas ./ipodpatcher $ipod -wf ../../build/rockbox.ipod
+popd
+# write files
+doas mount ${ipod}2 /mnt
+doas unzip rockbox.zip -d /mnt  # not confirmed
+
+# install theme
+# download from https://github.com/hg8/iPod-reFresh-rockbox-theme
