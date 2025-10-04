@@ -1,0 +1,4 @@
+patch -p1 < fullscreen-splash.patch
+rockboxlogo.320x240x16.bmp
+magick convert -define bmp:format=bmp3 /path/to/splash.bmp -depth 16 apps/bitmaps/native/rockboxlogo.320x240x16.bmp
+make

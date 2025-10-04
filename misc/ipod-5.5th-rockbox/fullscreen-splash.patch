@@ -1,0 +1,27 @@
+diff --git a/apps/bitmaps/native/SOURCES b/apps/bitmaps/native/SOURCES
+index d8ed1dc4db..84a88f61c1 100644
+--- a/apps/bitmaps/native/SOURCES
++++ b/apps/bitmaps/native/SOURCES
+@@ -30,7 +30,8 @@ rockboxlogo.220x68x16.bmp
+ #elif (LCD_WIDTH == 240) && (LCD_DEPTH >= 16)
+ rockboxlogo.240x74x16.bmp
+ #elif (LCD_WIDTH >= 320) && (LCD_WIDTH < 480)  && (LCD_DEPTH >= 16)
+-rockboxlogo.320x98x16.bmp
++// rockboxlogo.320x98x16.bmp
++rockboxlogo.320x240x16.bmp
+ #elif (LCD_WIDTH >= 480) && (LCD_WIDTH < 640) && (LCD_DEPTH >= 16)
+ rockboxlogo.480x149x16.bmp
+ #elif (LCD_WIDTH >= 640) && (LCD_DEPTH >= 16)
+diff --git a/apps/main.c b/apps/main.c
+index 7a29e90ab0..21b74fc0cf 100644
+--- a/apps/main.c
++++ b/apps/main.c
+@@ -254,7 +254,7 @@ int show_logo_boot( void )
+         lcd_putsxy((LCD_WIDTH/2) - (ver_w/2), 0, version);
+     lcd_bmp(&bm_rockboxlogo, (LCD_WIDTH - BMPWIDTH_rockboxlogo) / 2, 16);
+ #else
+-    lcd_bmp(&bm_rockboxlogo, (LCD_WIDTH - BMPWIDTH_rockboxlogo) / 2, 10);
++    lcd_bmp(&bm_rockboxlogo, 0, 0);
+     if (ver_w > LCD_WIDTH)
+         lcd_putsxy(0, LCD_HEIGHT-font_h, rbversion);
+     else

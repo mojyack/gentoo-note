@@ -1,0 +1,13 @@
+diff --git a/apps/plugins/SUBDIRS b/apps/plugins/SUBDIRS
+index b48cad5a26..9fd3bc8483 100644
+--- a/apps/plugins/SUBDIRS
++++ b/apps/plugins/SUBDIRS
+@@ -14,7 +14,7 @@ xworld
+ 
+ /* for duke3d, wolf3d and quake */
+ #if (PLUGIN_BUFFER_SIZE > 0x14000) && (CONFIG_PLATFORM & (PLATFORM_NATIVE|PLATFORM_HOSTED)) && (defined(CPU_ARM) || defined(CPU_MIPS)) && !defined(RG_NANO)
+-sdl
++// sdl
+ #endif
+ 
+ puzzles

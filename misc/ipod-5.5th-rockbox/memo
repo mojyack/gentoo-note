@@ -4,6 +4,7 @@ doas pacman -S arm-none-eabi-{gcc,newlib} zip
 git clone https://github.com/Rockbox/rockbox.git
 mkdir build
 cd build
+patch -p1 < no-sdl.patch  # duke3d compilation error
 ../tools/configure --target=22 --type=n --compiler-prefix=arm-none-eabi-
 make
 make zip
