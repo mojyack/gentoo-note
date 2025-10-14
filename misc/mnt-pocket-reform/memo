@@ -2,3 +2,8 @@
 ln -s $PWD/tlv ~/bin
 # disable broken hard suspend
 ln -s $PWD/suspend-hook /usr/local/bin
+# install ucm profile
+cd /tmp
+git clone --depth=1 https://source.mnt.re/reform/reform-tools.git
+doas mkdir -p /usr/share/alsa/ucm2/conf.d/rk3588-tlv320ai/rk3588-tlv320aic3100
+doas cp reform-tools/audio/ucm2.conf.d/rk3588-tlv320ai/*.conf /usr/share/alsa/ucm2/conf.d/rk3588-tlv320ai/rk3588-tlv320aic3100
