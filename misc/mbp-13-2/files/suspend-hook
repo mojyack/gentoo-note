@@ -1,0 +1,28 @@
+#!/bin/bash
+
+kbdled="/sys/class/leds/spi::kbd_backlight/brightness"
+
+if [[ $1 == 0 ]]; then
+    # keyboard led
+    cp "$kbdled" /tmp/kbdled
+    echo 0 > "$kbdled"
+
+    # brcmfmac causes spurious wakeup
+    modprobe --remove --remove-dependencies brcmfmac_wcc
+    echo 1 > /sys/bus/pci/devices/0000:02:00.0/remove
+
+    # lid switch causes spurious wakeup
+    if [[ $(</proc/acpi/button/lid/LID0/state) == *open ]]; then
+        wakeup=disabled
+    else
+        wakeup=enabled
+    fi
+    echo $wakeup > /sys/bus/acpi/devices/PNP0C0D:00/power/wakeup
+else
+    # restore keyboard led
+    cat /tmp/kbdled > "$kbdled"
+
+    # restore brcmfmac
+    echo 1 > /sys/bus/pci/rescan
+    modprobe brcmfmac_wcc
+fi
