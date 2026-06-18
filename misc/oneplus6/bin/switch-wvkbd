@@ -1,0 +1,5 @@
+#!/bin/bash
+
+if ! killall -s 35 wvkbd; then
+    wvkbd &!
+fi

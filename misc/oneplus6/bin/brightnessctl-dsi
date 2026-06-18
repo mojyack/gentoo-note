@@ -1,0 +1,4 @@
+#!/bin/zsh
+# $1 value
+
+exec brightnessctl-sysfs "/sys/class/backlight/ae94000.dsi.0" $1

@@ -1,0 +1,40 @@
+#!/bin/bash
+# $1 csiphy
+# $2 mode
+
+s0m0=(4656 3496)
+s0m1=(3840 2160)
+s0m2=(2328 1748)
+s0m3=(1920 1080)
+s0m4=(1280 720)
+
+s1m0=(2592 1940)
+
+s2m0=(4656 3496)
+
+eval size=(\${s$1m$2[@]})
+args=(--csiphy $1 --width ${size[0]} --height ${size[1]})
+
+if [[ $1 == 0 ]]; then
+    args+=(--rotate 90)
+    case $2 in
+        0) args+=(--wb-r 119 --wb-g 52 --wb-b 94);;
+        1) args+=(--wb-r 93 --wb-g 49 --wb-b 93);;
+        2) args+=(--wb-r 120 --wb-g 52 --wb-b 123);;
+        3) args+=(--wb-r 94 --wb-g 51 --wb-b 97);;
+        4) args+=(--wb-r 104 --wb-g 54 --wb-b 94);; # vblank 930
+    esac
+elif [[ $1 == 1 ]]; then
+    args+=(--rotate 270)
+    case $2 in
+        0) args+=(--wb-r 116 --wb-g 56 --wb-b 90);;
+    esac
+elif [[ $1 == 2 ]]; then
+    args+=(--rotate 90 --cell 2)
+    case $2 in
+        0) args+=(--wb-r 111 --wb-g 54 --wb-b 98);;
+    esac
+fi
+
+shift 2
+exec wlcam-camss ${args[@]} -o ~/pictures/DCIM $@
