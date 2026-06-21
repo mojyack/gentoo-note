@@ -1,0 +1,10 @@
+device_name "Alert slider"
+
+capture_device "Alert slider"
+
+# KEY_1 2
+# KEY_2 3
+# KEY_3 4
+map 0 3 34 0 2 1 1
+map 0 3 34 1 3 1 1
+map 0 3 34 2 4 1 1
