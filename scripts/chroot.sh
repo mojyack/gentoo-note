@@ -27,16 +27,16 @@ try mount --make-rslave "$root/run"
 try mount -t tmpfs tmpfs "$root/tmp"
 
 # optional
-if [[ -e "$root/var/cache/distfiles" ]]; then
+if [[ -e "$root/var/cache/distfiles" && -e /var/cache/distfiles ]]; then
     try rsync -a -P --remove-source-files "$root/var/cache/distfiles/" /var/cache/distfiles/
     try mount -o bind /var/cache/distfiles "$root/var/cache/distfiles"
     distfiles_mounted=1
 fi
-if [[ -e "$root/var/cache/binpkgs" ]]; then
+if [[ -e "$root/var/cache/binpkgs" && -e /var/cache/binpkgs ]]; then
     try mount -o bind /var/cache/binpkgs "$root/var/cache/binpkgs"
     binpkgs_mounted=1
 fi
-if [[ -e "$root/usr/src" ]]; then
+if [[ -e "$root/usr/src" && -e /usr/src ]]; then
     try mount -o bind /usr/src "$root/usr/src"
     src_mounted=1
 fi
