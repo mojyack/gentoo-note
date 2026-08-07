@@ -1,0 +1,2 @@
+evdev:name:Input device name:*
+    KEYBOARD_KEY_xxxxx=leftctrl

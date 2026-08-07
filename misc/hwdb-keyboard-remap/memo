@@ -1,0 +1,5 @@
+1. run evtest
+2. note "Input device name"
+3. find scancodes, watch MSC_SCAN
+4. install hwdb to /etc/udev/hwdb.d/
+5. run `systemd-hwdb update && udevadm trigger --subsystem-match=input`
