@@ -1,0 +1,16 @@
+evdev:name:AT Translated Set 2 keyboard:*
+    KEYBOARD_KEY_db=leftctrl
+    KEYBOARD_KEY_1d=capslock
+    KEYBOARD_KEY_38=leftmeta
+    KEYBOARD_KEY_7b=leftalt
+    KEYBOARD_KEY_79=space
+    KEYBOARD_KEY_ea=f1
+    KEYBOARD_KEY_e7=f2
+    KEYBOARD_KEY_91=f3
+    KEYBOARD_KEY_92=f4
+    KEYBOARD_KEY_94=f5
+    KEYBOARD_KEY_95=f6
+    KEYBOARD_KEY_9b=f7
+    KEYBOARD_KEY_a0=f8
+    KEYBOARD_KEY_ae=f9
+    KEYBOARD_KEY_b0=f10
