@@ -1,5 +1,5 @@
 #!/bin/bash
 
-if ! killall -s 35 wvkbd; then
-    wvkbd &!
+if ! killall -s 35 wvkbd-custom; then
+    wvkbd-custom &!
 fi

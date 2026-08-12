@@ -1,13 +1,17 @@
 #!/bin/bash
 
-killall swaybarpp
-if swaymsg -t get_outputs | grep transform | grep -q normal; then
+if swaymsg -t get_outputs | grep transform | grep -q 180; then
     rot=270
     config=config-landscape
 else
-    rot=0
+    rot=180
     config=config
 fi
 
+pid=$(pgrep -u $USER -x swaybarpp)
 swaymsg "output DSI-1 transform $rot"
-swaybarpp ~/.config/swaybarpp/$config.json &
+nohup swaybarpp ~/.config/swaybarpp/$config.json > /dev/null 2>&1 &
+
+if ! [[ -z $pid ]]; then
+    kill $pid # this may kill us, do at very last
+fi
