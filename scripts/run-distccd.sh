@@ -29,7 +29,7 @@ mkdir -p "cross"
 # $1 clang/clang++
 create_file() {
     cc=$1
-    echo "#!/bin/sh\nexec \"$(which $cc-$llvm_slot)\" --target=$tuple -Wno-gnu-line-marker \"\$@\"" > cross/$tuple-$cc
+    echo "#!/bin/sh\nexec \"$(command -v $cc-$llvm_slot || command -v $cc)\" --target=$tuple -Wno-gnu-line-marker \"\$@\"" > cross/$tuple-$cc
     chmod +x "cross/$tuple-$cc"
     ln -s "$tuple-$cc" "cross/$cc"
     ln -s "$tuple-$cc" "cross/$cc-$llvm_slot"
@@ -46,6 +46,7 @@ args=(
     --jobs 80
     --allow 127.0.0.1
     --allow 192.168.1.0/24
+    --allow 192.168.128.0/22
 )
 PATH=$PWD/cross:$PATH exec distccd $args &
 echo ok
