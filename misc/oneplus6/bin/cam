@@ -16,7 +16,7 @@ eval size=(\${s$1m$2[@]})
 args=(--csiphy $1 --width ${size[0]} --height ${size[1]})
 
 if [[ $1 == 0 ]]; then
-    args+=(--rotate 90)
+    args+=(--rotate 270)
     case $2 in
         0) args+=(--wb-r 119 --wb-g 52 --wb-b 94);;
         1) args+=(--wb-r 93 --wb-g 49 --wb-b 93);;
@@ -25,12 +25,12 @@ if [[ $1 == 0 ]]; then
         4) args+=(--wb-r 104 --wb-g 54 --wb-b 94);; # vblank 930
     esac
 elif [[ $1 == 1 ]]; then
-    args+=(--rotate 270)
+    args+=(--rotate 90)
     case $2 in
         0) args+=(--wb-r 116 --wb-g 56 --wb-b 90);;
     esac
 elif [[ $1 == 2 ]]; then
-    args+=(--rotate 90 --cell 2)
+    args+=(--rotate 270 --cell 2)
     case $2 in
         0) args+=(--wb-r 111 --wb-g 54 --wb-b 98);;
     esac
