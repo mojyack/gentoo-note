@@ -1,12 +1,14 @@
 branch=release
-patches=firefox-149-patches-02t.tar.xz
+tag=FIREFOX_153_0_4_RELEASE
+patches=firefox-153-patches-01.tar.xz
 files=$PWD/files
 
-git clone --depth=1 -b $branch https://github.com/mozilla-firefox/firefox
+git clone --depth=10000 -b $branch https://github.com/mozilla-firefox/firefox
 curl https://dev.gentoo.org/~juippis/mozilla/patchsets/$patches | tar -xvJ
 cd firefox
+git checkout -b develop $tag
 for patch in ../firefox-patches/*.patch $files/*.patch; do patch -p1 < $patch && git commit -am "patch $patch"; done
 source $files/env
-ln -s $files/mozconfig.arm64 .
+ln -s $files/mozconfig.arm64 mozconfig
 ./mach build
 LD_LIBRARY_PATH=/tmp/firefox-build/dist/bin /tmp/firefox-build/dist/bin/firefox
