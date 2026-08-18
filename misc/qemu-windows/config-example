@@ -1,5 +1,5 @@
 # for base
-mem=8G
+mem=8  # G
 
 # for input
 input_keyboard=usb-PFU_Limited_HHKB-Classic-event-kbd

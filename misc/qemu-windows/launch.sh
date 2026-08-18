@@ -2,18 +2,35 @@
 
 source config
 
-# for virtiofs
+# build -cpu option
+cpu_opts=host,hv_passthrough
+if [[ $(grep -m 1 'vendor_id' /proc/cpuinfo | awk '{print $3}') == "AuthenticAMD" ]]; then
+    cpu_opts="$cpu_opts,topoext"
+fi
+
+# build -smp option
+sockets=$(lscpu | grep "^Socket(s):" | awk '{print $2}')
+cores_per_socket=$(lscpu | grep "Core(s) per socket:" | awk '{print $4}')
+threads_per_core=$(lscpu | grep "Thread(s) per core:" | awk '{print $4}')
+total_cpus=$(( sockets * cores_per_socket * threads_per_core ))
+smp_opts="${total_cpus},sockets=${sockets},cores=${cores_per_socket},threads=${threads_per_core}"
+
+# setup hugepages
+hugepages_sysfs="/sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages"
+orig_hugepages=$(<$hugepages_sysfs)
+echo $(( orig_hugepages + (mem * 1024 + 256) / 2 )) | doas tee $hugepages_sysfs
+
+# setup virtiofs
 virtiofs_sock=/tmp/qemu-virtiofs.sock
-
-
 doas chown mojyack:mojyack $own_files
 /usr/libexec/virtiofsd --socket-path=$virtiofs_sock --shared-dir=$HOME/working &
 
+
 base=(
-    -cpu host,kvm=off
+    -cpu $cpu_opts
     -enable-kvm
-    -smp 8
-    -m ${mem}
+    -smp $smp_opts
+    -m ${mem}G
     -machine vmport=off
     -machine q35
     -nodefaults
@@ -73,7 +90,7 @@ audio=(
 )
 
 virtiofs=(
-    -object memory-backend-memfd,id=mem,size=$mem,share=on
+    -object memory-backend-memfd,id=mem,size=${mem}G,share=on,hugetlb=on,hugetlbsize=2M,prealloc=on
     -numa node,memdev=mem
     -chardev socket,id=char0,path=$virtiofs_sock
     -device vhost-user-fs-pci,chardev=char0,tag=share
@@ -84,3 +101,6 @@ stdio=(
 )
  
 qemu-system-x86_64 $base $efi $evdev $gpu $audio $net $drive $virtiofs $qemu_args
+
+# restore hugepages setting
+echo $orig_hugepages | doas tee $hugepages_sysfs
