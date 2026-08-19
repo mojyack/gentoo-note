@@ -1,0 +1,32 @@
+# Use different pre-set defaults than the global defaults.
+#
+# See `src/bootstrap/defaults` for more information.
+# Note that this has no default value (x.py uses the defaults in `bootstrap.example.toml`).
+profile = 'dist'
+change-id = 154508
+
+[llvm]
+link-shared = true
+
+[gcc]
+
+[build]
+cargo = '%sysroot%/bin/cargo'
+rustc = '%sysroot%/bin/rustc'
+build-dir = '%build%'
+
+docs = false
+
+[install]
+prefix = '%prefix%'
+sysconfdir = "etc"
+
+[rust]
+
+[dist]
+
+[target.x86_64-unknown-linux-gnu]
+llvm-config = '/usr/bin/llvm-config'
+
+[target.aarch64-unknown-linux-gnu]
+llvm-config = '/usr/bin/llvm-config'
