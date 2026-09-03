@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# temporary disable power button events while suspend,
+# to prevent sway from handling wake-up button press
+
+pwrkey=0:0:max77620-onkey
+
+if [[ -z $SWAYSOCK ]]; then
+    export SWAYSOCK="/tmp/user/1000/sway-ipc.1000.$(pgrep -x sway).sock"
+fi
+
+if [[ $1 == 0 ]]; then
+    swaymsg "input $pwrkey events disabled"
+elif [[ $1 == 1 ]]; then
+    sleep 1
+    swaymsg "input $pwrkey events enabled"
+fi

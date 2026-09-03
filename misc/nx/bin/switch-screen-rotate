@@ -1,0 +1,17 @@
+#!/bin/bash
+
+if swaymsg -t get_outputs | grep transform | grep -q 270; then
+    rot=0
+    config=config-portrait
+else
+    rot=270
+    config=config
+fi
+
+pid=$(pgrep -u $USER -x swaybarpp)
+swaymsg "output DSI-1 transform $rot"
+nohup swaybarpp ~/.config/swaybarpp/$config.json > /dev/null 2>&1 &
+
+if ! [[ -z $pid ]]; then
+    kill $pid # this may kill us, do at very last
+fi
