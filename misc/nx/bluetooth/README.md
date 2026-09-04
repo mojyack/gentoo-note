@@ -2,8 +2,8 @@
 ## over rail
 ```sh
 ADAPTER=$(bluetoothctl show | awk '/^Controller/ { print $2 }')
-echo $ADAPTER > /sys/bus/serial/devices/serial0-0/pair_host  # right
-echo $ADAPTER > /sys/bus/serial/devices/serial1-0/pair_host  # left
+echo $ADAPTER > /sys/bus/serial/devices/serial0-0/pairing_host  # right
+echo $ADAPTER > /sys/bus/serial/devices/serial1-0/pairing_host  # left
 ./install-pairing-key.sh  # tell bluetoothd
 ```
 ## with sync button

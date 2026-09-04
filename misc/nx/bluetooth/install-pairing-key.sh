@@ -36,8 +36,9 @@ for dir in "$RAILS"/*/; do
 		continue
 	}
 
-	mac=$(head -qn1 "$dir"/input/input*/uniq); mac=${mac^^}
-	product=$(head -qn1 "$dir"/input/input*/id/product)
+	inputs=("$dir"/input/input*)
+	read -r mac < "${inputs[0]}/uniq"; mac=${mac^^}
+	read -r product < "${inputs[0]}/id/product"
 	case $product in
 	2006) name="Joy-Con (L)";;
 	2007) name="Joy-Con (R)";;
