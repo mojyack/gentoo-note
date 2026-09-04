@@ -9,8 +9,7 @@ else
 fi
 
 pid=$(pgrep -u $USER -x swaybarpp)
-swaymsg "output DSI-1 transform $rot"
-nohup swaybarpp ~/.config/swaybarpp/$config.json > /dev/null 2>&1 &
+swaymsg "output DSI-1 transform $rot; exec_always swaybarpp ~/.config/swaybarpp/$config.json"
 
 if ! [[ -z $pid ]]; then
     kill $pid # this may kill us, do at very last
