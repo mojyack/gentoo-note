@@ -1,9 +1,0 @@
-#!/bin/sh
-
-if [[ -z $1 ]]; then
-    txt=boot.txt
-else
-    txt=$1
-fi
-
-mkimage -A arm64 -O linux -T script -d scripts/$txt boot.scr
