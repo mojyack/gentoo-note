@@ -43,6 +43,7 @@ args=(
     --log-file=$workdir/log
     --enable-tcp-insecure
     --jobs 80
+    --port ${port:-3632}
     --allow 127.0.0.1
     --allow 192.168.1.0/24
     --allow 192.168.128.0/22
