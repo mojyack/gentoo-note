@@ -24,10 +24,10 @@ adapter=$(bluetoothctl show 2>/dev/null | awk '/^Controller/ { print $2; exit }'
 declare -A keys=() names=() products=()
 for dir in "$RAILS"/*/; do
 	rail=${dir%/}; rail=${rail##*/}
-	[[ -e $dir/pairing_key ]] || continue
+	[[ -e $dir/pairing_record ]] || continue
 
 	# -ENODATA until the controller answers, and for one never paired.
-	host=$(cat "$dir/pairing_host" 2>/dev/null) && key=$(cat "$dir/pairing_key") || {
+	read -r host key < "$dir/pairing_record" 2>/dev/null || {
 		echo "$rail: no pairing record (not docked long enough, or never paired)"
 		continue
 	}
