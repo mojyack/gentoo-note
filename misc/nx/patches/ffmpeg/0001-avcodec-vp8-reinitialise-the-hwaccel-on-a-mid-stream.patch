@@ -1,0 +1,54 @@
+From 78d89f68bc3e8ea6c0e4df3f4606dc5ebdfa8bd1 Mon Sep 17 00:00:00 2001
+From: mojyack <mojyack@gmail.com>
+Date: Mon, 24 Aug 2026 08:24:53 +0000
+Subject: [PATCH 1/5] avcodec/vp8: reinitialise the hwaccel on a mid-stream
+ resolution change
+
+update_dimensions() computes dim_reset, its "the dimensions changed"
+flag, from s->macroblocks_base - after vp8_decode_flush_impl(avctx, 1)
+has freed exactly that pointer.  So dim_reset is always 0, the
+get_pixel_format()/ff_get_format() call below is reached only on the
+first frame, and no hwaccel is ever told the size changed.  Frame
+threading hides it a second time: each thread starts with
+macroblocks_base == NULL, so even with the order corrected only a
+single-threaded decode would see it.
+
+The enclosing if is already the test, so set the flag inside it.
+
+Broken since eb6bb8f32fdc ("libavcodec/vp8dec: fix the multi-thread
+HWAccel decode error"), which added the flag.
+
+A hwaccel keeps decoding at the negotiated size: a stateless V4L2
+decoder refuses the frame outright ("frame dimensions do not match the
+negotiated coded format"), and the VP8-TEST-VECTORS streams
+vp80-03-segmentation-1425 and -1436 fail on it.  Both are byte-exact
+against software with this, taking that suite to 61 of 61 on a Tegra X1.
+
+Assisted-by: Claude:claude-opus-5
+---
+ libavcodec/vp8.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/libavcodec/vp8.c b/libavcodec/vp8.c
+index 40564ec9f9..09aacf20e8 100644
+--- a/libavcodec/vp8.c
++++ b/libavcodec/vp8.c
+@@ -205,13 +205,13 @@ int update_dimensions(VP8Context *s, int width, int height, int is_vp7)
+ 
+     if (width  != s->avctx->width || ((width+15)/16 != s->mb_width || (height+15)/16 != s->mb_height) && s->macroblocks_base ||
+         height != s->avctx->height) {
++        dim_reset = 1;
++
+         vp8_decode_flush_impl(s->avctx, 1);
+ 
+         ret = ff_set_dimensions(s->avctx, width, height);
+         if (ret < 0)
+             return ret;
+-
+-        dim_reset = (s->macroblocks_base != NULL);
+     }
+ 
+     if ((s->pix_fmt == AV_PIX_FMT_NONE || dim_reset) &&
+-- 
+2.56.0
+

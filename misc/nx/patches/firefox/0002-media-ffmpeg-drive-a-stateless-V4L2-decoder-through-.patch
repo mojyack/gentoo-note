@@ -1,0 +1,159 @@
+From 8e66bb0174ab2c42988b3590df33309f77c898dc Mon Sep 17 00:00:00 2001
+From: mojyack <mojyack@gmail.com>
+Date: Mon, 24 Aug 2026 08:26:19 +0000
+Subject: [PATCH 2/3] media/ffmpeg: drive a stateless V4L2 decoder through the
+ request hwaccel
+
+InitV4L2Decoder() selects a decoder with FindVideoHardwareAVCodec(),
+which finds the FFmpeg *_v4l2m2m wrapper - the stateful path, which
+parses the bitstream itself in the driver.  A stateless V4L2 device has
+no such wrapper: it is driven by FFmpeg's own software parser plus the
+V4L2 request API hwaccel, which appears as a hardware config on the
+software decoder, producing AV_PIX_FMT_DRM_PRIME frames from a hardware
+device context.  On a board with only a stateless decoder the wrapper is
+still found, avcodec_open2() then fails because no stateful device
+exists, and hardware decoding is reported as unavailable.
+
+Build a short candidate list instead - the wrapper first, then the
+software decoder carrying a DRM_PRIME hardware config - create the
+hwaccel's device context for the latter, and open the first that
+succeeds.  A board with a stateful device keeps the path it had, since
+its wrapper opens on the first try.
+
+Verified on a Tegra X1 with a stateless NVDEC V4L2 node: H.264 and VP8
+report IsHardwareAccelerated=true, WebRender imports the exported
+dma-bufs, and YouTube plays hardware-decoded at 1080p60.
+
+Assisted-by: Claude (claude-opus-5)
+---
+ .../platforms/ffmpeg/FFmpegVideoDecoder.cpp   | 104 +++++++++++++-----
+ 1 file changed, 77 insertions(+), 27 deletions(-)
+
+diff --git a/dom/media/platforms/ffmpeg/FFmpegVideoDecoder.cpp b/dom/media/platforms/ffmpeg/FFmpegVideoDecoder.cpp
+index 930a510b05df..db8292a889e5 100644
+--- a/dom/media/platforms/ffmpeg/FFmpegVideoDecoder.cpp
++++ b/dom/media/platforms/ffmpeg/FFmpegVideoDecoder.cpp
+@@ -799,43 +799,93 @@ MediaResult FFmpegVideoDecoder<LIBAV_VER>::InitV4L2Decoder() {
+     FFMPEG_LOG("  Format {} is accelerated", mLib->avcodec_get_name(mCodecID));
+   }
+ 
+-  // Select the appropriate v4l2 codec
+-  AVCodec* codec = FindVideoHardwareAVCodec(mLib, mCodecID);
+-  if (!codec) {
++  // Select the appropriate v4l2 codec.  A stateful device is driven by an
++  // FFmpeg *_v4l2m2m wrapper decoder, which does its own parsing.  A stateless
++  // device is driven by the software decoder plus a request API hwaccel, which
++  // advertises itself as a hardware config on the software decoder producing
++  // DRM_PRIME frames from a hardware device context.  Both exist in FFmpeg
++  // whatever hardware is present, so try each in turn and let the ones with no
++  // matching device fail to open.
++  struct V4L2Candidate {
++    AVCodec* mCodec;
++    AVHWDeviceType mDeviceType;
++  };
++  AutoTArray<V4L2Candidate, 2> candidates;
++  if (AVCodec* wrapper = FindVideoHardwareAVCodec(mLib, mCodecID)) {
++    candidates.AppendElement(V4L2Candidate{wrapper, AV_HWDEVICE_TYPE_NONE});
++  }
++  if (mLib->avcodec_get_hw_config && mLib->av_hwdevice_ctx_create) {
++    AVCodec* sw =
++        FFmpegDataDecoder<LIBAV_VER>::FindSoftwareAVCodec(mLib, mCodecID);
++    for (int i = 0; sw; i++) {
++      const AVCodecHWConfig* config = mLib->avcodec_get_hw_config(sw, i);
++      if (!config) {
++        break;
++      }
++      if (config->pix_fmt == AV_PIX_FMT_DRM_PRIME &&
++          (config->methods & AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX)) {
++        candidates.AppendElement(V4L2Candidate{sw, config->device_type});
++        break;
++      }
++    }
++  }
++  if (candidates.IsEmpty()) {
+     FFMPEG_LOG("No appropriate v4l2 codec found");
+     return NS_ERROR_DOM_MEDIA_FATAL_ERR;
+   }
+-  FFMPEG_LOG("  V4L2 codec {} : {}", codec->name, codec->long_name);
+-
+-  if (!(mCodecContext = mLib->avcodec_alloc_context3(codec))) {
+-    FFMPEG_LOG("  couldn't init HW ffmpeg context");
+-    return NS_ERROR_OUT_OF_MEMORY;
+-  }
+-  mCodecContext->opaque = this;
+-
+-  InitHWCodecContext(ContextType::V4L2);
+-
+-  // Disable cropping in FFmpeg.  Because our frames are opaque DRM buffers
+-  // FFmpeg can't actually crop them and it tries to do so by just modifying
+-  // the width and height.  This causes problems because V4L2 outputs a single
+-  // buffer/layer/plane with all three planes stored contiguously.  We need to
+-  // know the offsets to each plane, and if FFmpeg applies cropping (and then
+-  // we can't find out what the original uncropped width/height was) then we
+-  // can't work out the offsets.
+-  mCodecContext->apply_cropping = 0;
+ 
+   // MOZ_REQUIRES isn't recognized in MakeScopeExit, but InitV4L2Decoder
+   // already locks sMutex at the start, so just escape thread analysis.
+   auto releaseDecoder = MakeScopeExit(
+       [&]() MOZ_NO_THREAD_SAFETY_ANALYSIS { ReleaseCodecContext(); });
+ 
+-  MediaResult ret = AllocateExtraData();
+-  if (NS_FAILED(ret)) {
+-    return ret;
+-  }
++  bool opened = false;
++  for (const auto& candidate : candidates) {
++    AVCodec* codec = candidate.mCodec;
++    ReleaseCodecContext();
++    FFMPEG_LOG("  V4L2 codec {} : {}", codec->name, codec->long_name);
++
++    if (!(mCodecContext = mLib->avcodec_alloc_context3(codec))) {
++      FFMPEG_LOG("  couldn't init HW ffmpeg context");
++      return NS_ERROR_OUT_OF_MEMORY;
++    }
++    mCodecContext->opaque = this;
++
++    InitHWCodecContext(ContextType::V4L2);
++
++    // Disable cropping in FFmpeg.  Because our frames are opaque DRM buffers
++    // FFmpeg can't actually crop them and it tries to do so by just modifying
++    // the width and height.  This causes problems because V4L2 outputs a single
++    // buffer/layer/plane with all three planes stored contiguously.  We need to
++    // know the offsets to each plane, and if FFmpeg applies cropping (and then
++    // we can't find out what the original uncropped width/height was) then we
++    // can't work out the offsets.
++    mCodecContext->apply_cropping = 0;
++
++    // A stateless decoder needs its hwaccel's device context, which owns the
++    // media device and the V4L2 node.  avcodec_free_context() releases it.
++    if (candidate.mDeviceType != AV_HWDEVICE_TYPE_NONE &&
++        mLib->av_hwdevice_ctx_create(&mCodecContext->hw_device_ctx,
++                                     candidate.mDeviceType, nullptr, nullptr,
++                                     0) < 0) {
++      FFMPEG_LOG("  Couldn't create hw device context type {}",
++                 static_cast<int>(candidate.mDeviceType));
++      continue;
++    }
+ 
+-  if (mLib->avcodec_open2(mCodecContext, codec, nullptr) < 0) {
+-    FFMPEG_LOG("  Couldn't initialise V4L2 decoder");
++    MediaResult ret = AllocateExtraData();
++    if (NS_FAILED(ret)) {
++      return ret;
++    }
++
++    if (mLib->avcodec_open2(mCodecContext, codec, nullptr) < 0) {
++      FFMPEG_LOG("  Couldn't initialise V4L2 decoder");
++      continue;
++    }
++    opened = true;
++    break;
++  }
++  if (!opened) {
+     return NS_ERROR_DOM_MEDIA_FATAL_ERR;
+   }
+ 
+-- 
+2.56.0
+

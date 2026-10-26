@@ -1,0 +1,265 @@
+From 52ff07970c29437bbfca7d6715cda50ed4363a3c Mon Sep 17 00:00:00 2001
+From: mojyack <mojyack.shadow@gmail.com>
+Date: Mon, 28 Sep 2026 10:49:24 +0900
+Subject: [PATCH 4/5] avcodec/v4l2_request_mpeg2: decode field pictures
+
+A field picture decodes half of a frame, and its second field decodes
+into the CAPTURE buffer the first one already wrote. Queue the first
+field with V4L2_BUF_FLAG_M2M_HOLD_CAPTURE_BUF so the decoder keeps that
+buffer until the second field of the pair has been queued, and start
+the second field's request without waiting on it: the driver is still
+holding it, so the wait would never complete.
+
+mpeg12dec can end the same field twice: when the two fields of a pair
+arrive in separate packets, slice_end() ends the first one at the end of
+its packet, and mpeg_field_start() ends it again before starting the
+second. Submit a picture once and return the result of that submission
+to any later end_frame(), so that a repeated call neither queues a
+second held request, which would wait forever on the CAPTURE buffer the
+first one holds, nor lets the second field continue a first field that
+failed to queue.
+
+A held first field whose second field is never queued - the decoder is
+flushed between the two, or the second field fails to start or queue -
+keeps its CAPTURE buffer held, and the next picture decoded into that
+buffer waits for it until it times out. Remember which CAPTURE buffer
+the driver holds, and release it with V4L2_DEC_CMD_FLUSH when a new
+picture starts instead of a continuation, on flush, and when the picture
+is output: mpeg12dec outputs a field picture only once its second field
+is decoded, except on drain or at a sequence end, where it hands out the
+pending one as is, like the software decoder. Have mpeg12dec flush the
+hwaccel too, as the other decoders do.
+
+Assisted-by: Claude:claude-opus-5
+---
+ libavcodec/mpeg12dec.c          |  3 ++
+ libavcodec/v4l2_request.c       | 59 +++++++++++++++++++++++++++++----
+ libavcodec/v4l2_request.h       |  6 ++++
+ libavcodec/v4l2_request_mpeg2.c | 35 +++++++++++++++++--
+ 4 files changed, 94 insertions(+), 9 deletions(-)
+
+diff --git a/libavcodec/mpeg12dec.c b/libavcodec/mpeg12dec.c
+index b9dcff97a6..891109e598 100644
+--- a/libavcodec/mpeg12dec.c
++++ b/libavcodec/mpeg12dec.c
+@@ -2631,6 +2631,9 @@ static av_cold void flush(AVCodecContext *avctx)
+ 
+     av_buffer_unref(&s->a53_buf_ref);
+     ff_mpeg_flush(avctx);
++
++    if (FF_HW_HAS_CB(avctx, flush))
++        FF_HW_SIMPLE_CALL(avctx, flush);
+ }
+ 
+ static av_cold int mpeg_decode_end(AVCodecContext *avctx)
+diff --git a/libavcodec/v4l2_request.c b/libavcodec/v4l2_request.c
+index d236ff5065..135b4ca8ce 100644
+--- a/libavcodec/v4l2_request.c
++++ b/libavcodec/v4l2_request.c
+@@ -252,6 +252,24 @@ fail:
+     return AVERROR(EINVAL);
+ }
+ 
++// Must be called with the mutex held
++static void v4l2_request_release_capture(V4L2RequestContext *ctx)
++{
++    struct v4l2_decoder_cmd cmd = {
++        .cmd = V4L2_DEC_CMD_FLUSH,
++    };
++
++    if (!ctx->held_capture)
++        return;
++
++    // The continuation of the held picture will never be queued
++    if (ioctl(ctx->fctxi->video_fd, VIDIOC_DECODER_CMD, &cmd) < 0)
++        av_log(ctx, AV_LOG_ERROR, "Failed to release CAPTURE buffer %d: %s (%d)\n",
++               ctx->held_capture - 1, strerror(errno), errno);
++
++    ctx->held_capture = 0;
++}
++
+ static V4L2RequestOutputBuffer *v4l2_request_next_output(V4L2RequestContext *ctx)
+ {
+     enum v4l2_buf_type type = ctx->fctxi->output.format.type;
+@@ -457,6 +475,7 @@ static int v4l2_request_queue_decode(AVCodecContext *avctx,
+ 
+     // Mark current request as queued
+     ctx->queued_request |= 1 << pic->output->index;
++    ctx->held_capture = last_slice ? 0 : pic->capture_index + 1;
+ 
+     ret = 0;
+ fail:
+@@ -506,6 +525,12 @@ static int v4l2_request_post_process(void *logctx, AVFrame *frame)
+         frame->crop_right = frame->crop_bottom = 0;
+     }
+ 
++    // An incomplete frame being output, e.g. on drain, is not continued
++    ff_mutex_lock(&ctx->mutex);
++    if (ctx->held_capture == index + 1)
++        v4l2_request_release_capture(ctx);
++    ff_mutex_unlock(&ctx->mutex);
++
+     // Wait on CAPTURE buffer before returning the frame to application
+     return v4l2_request_wait_on_capture(ctx, index);
+ }
+@@ -522,9 +547,9 @@ int ff_v4l2_request_reset_picture(AVCodecContext *avctx, V4L2RequestPictureConte
+     return 0;
+ }
+ 
+-int ff_v4l2_request_start_frame(AVCodecContext *avctx,
+-                                V4L2RequestPictureContext *pic,
+-                                AVFrame *frame)
++static int v4l2_request_start(AVCodecContext *avctx,
++                              V4L2RequestPictureContext *pic,
++                              AVFrame *frame, bool wait)
+ {
+     V4L2RequestContext *ctx = v4l2_request_context(avctx);
+     uint32_t index = v4l2_request_frameindex(frame);
+@@ -537,9 +562,15 @@ int ff_v4l2_request_start_frame(AVCodecContext *avctx,
+         return ret;
+ 
+     // Ensure CAPTURE buffer is dequeued before reuse
+-    ret = v4l2_request_wait_on_capture(ctx, index);
+-    if (ret)
+-        return ret;
++    if (wait) {
++        ff_mutex_lock(&ctx->mutex);
++        v4l2_request_release_capture(ctx);
++        ff_mutex_unlock(&ctx->mutex);
++
++        ret = v4l2_request_wait_on_capture(ctx, index);
++        if (ret)
++            return ret;
++    }
+ 
+     // Wait on CAPTURE buffer in post_process() before returning to application
+     fdd->hwaccel_priv = ctx;
+@@ -551,6 +582,20 @@ int ff_v4l2_request_start_frame(AVCodecContext *avctx,
+     return 0;
+ }
+ 
++int ff_v4l2_request_start_frame(AVCodecContext *avctx,
++                                V4L2RequestPictureContext *pic,
++                                AVFrame *frame)
++{
++    return v4l2_request_start(avctx, pic, frame, true);
++}
++
++// The CAPTURE buffer is still held by the driver, nothing to wait for
++int ff_v4l2_request_continue_frame(AVCodecContext *avctx,
++                                   V4L2RequestPictureContext *pic,
++                                   AVFrame *frame)
++{
++    return v4l2_request_start(avctx, pic, frame, false);
++}
+ 
+ void ff_v4l2_request_flush(AVCodecContext *avctx)
+ {
+@@ -578,6 +623,8 @@ void ff_v4l2_request_flush(AVCodecContext *avctx)
+             break;
+     }
+ 
++    v4l2_request_release_capture(ctx);
++
+     // Dequeue all completed CAPTURE buffers
+     if (ctx->queued_capture)
+         v4l2_request_dequeue_completed_buffers(ctx, ctx->fctxi->capture.format.type);
+diff --git a/libavcodec/v4l2_request.h b/libavcodec/v4l2_request.h
+index 53759f20bb..9bb0454c83 100644
+--- a/libavcodec/v4l2_request.h
++++ b/libavcodec/v4l2_request.h
+@@ -52,6 +52,8 @@ typedef struct V4L2RequestContext {
+     uint64_t queued_capture;
+     struct v4l2_ext_control *init_controls;
+     int nb_init_controls;
++    // Index + 1 of the CAPTURE buffer the driver holds for a continuation
++    int held_capture;
+ } V4L2RequestContext;
+ 
+ typedef struct V4L2RequestPictureContext {
+@@ -89,6 +91,10 @@ int ff_v4l2_request_reset_picture(AVCodecContext *avctx,
+ int ff_v4l2_request_start_frame(AVCodecContext *avctx,
+                                 V4L2RequestPictureContext *pic, AVFrame *frame);
+ 
++int ff_v4l2_request_continue_frame(AVCodecContext *avctx,
++                                   V4L2RequestPictureContext *pic,
++                                   AVFrame *frame);
++
+ void ff_v4l2_request_flush(AVCodecContext *avctx);
+ 
+ int ff_v4l2_request_frame_params(AVCodecContext *avctx,
+diff --git a/libavcodec/v4l2_request_mpeg2.c b/libavcodec/v4l2_request_mpeg2.c
+index 5d89b7168e..e775d187f2 100644
+--- a/libavcodec/v4l2_request_mpeg2.c
++++ b/libavcodec/v4l2_request_mpeg2.c
+@@ -21,11 +21,15 @@
+ #include "hwaccel_internal.h"
+ #include "hwconfig.h"
+ #include "mathops.h"
++#include "mpegutils.h"
+ #include "mpegvideo.h"
+ #include "v4l2_request.h"
+ 
+ typedef struct V4L2RequestControlsMPEG2 {
+     V4L2RequestPictureContext pic;
++    int first_field;
++    int submitted;
++    int submit_ret;
+     struct v4l2_ctrl_mpeg2_sequence sequence;
+     struct v4l2_ctrl_mpeg2_picture picture;
+     struct v4l2_ctrl_mpeg2_quantisation quantisation;
+@@ -40,7 +44,16 @@ static int v4l2_request_mpeg2_start_frame(AVCodecContext *avctx,
+     V4L2RequestControlsMPEG2 *controls = s->cur_pic.ptr->hwaccel_picture_private;
+     int ret;
+ 
+-    ret = ff_v4l2_request_start_frame(avctx, &controls->pic, s->cur_pic.ptr->f);
++    controls->first_field = s->picture_structure == PICT_FRAME ||
++                            s->first_field;
++    controls->submitted = 0;
++
++    if (controls->first_field)
++        ret = ff_v4l2_request_start_frame(avctx, &controls->pic,
++                                          s->cur_pic.ptr->f);
++    else
++        ret = ff_v4l2_request_continue_frame(avctx, &controls->pic,
++                                             s->cur_pic.ptr->f);
+     if (ret)
+         return ret;
+ 
+@@ -131,6 +144,7 @@ static int v4l2_request_mpeg2_end_frame(AVCodecContext *avctx)
+ {
+     const MpegEncContext *s = avctx->priv_data;
+     V4L2RequestControlsMPEG2 *controls = s->cur_pic.ptr->hwaccel_picture_private;
++    int ret;
+ 
+     struct v4l2_ext_control control[] = {
+         {
+@@ -150,8 +164,23 @@ static int v4l2_request_mpeg2_end_frame(AVCodecContext *avctx)
+         },
+     };
+ 
+-    return ff_v4l2_request_decode_frame(avctx, &controls->pic,
+-                                        control, FF_ARRAY_ELEMS(control));
++    // mpeg12dec may end the same picture again, e.g. a field split across packets
++    if (controls->submitted)
++        return controls->submit_ret;
++
++    // Hold the CAPTURE buffer of a first field for the second field
++    if (controls->picture.picture_structure != V4L2_MPEG2_PIC_FRAME)
++        ret = ff_v4l2_request_decode_slice(avctx, &controls->pic, control,
++                                           FF_ARRAY_ELEMS(control),
++                                           controls->first_field,
++                                           !controls->first_field);
++    else
++        ret = ff_v4l2_request_decode_frame(avctx, &controls->pic,
++                                           control, FF_ARRAY_ELEMS(control));
++
++    controls->submitted = 1;
++    controls->submit_ret = ret;
++    return ret;
+ }
+ 
+ static int v4l2_request_mpeg2_init(AVCodecContext *avctx)
+-- 
+2.56.0
+

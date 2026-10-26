@@ -1,0 +1,100 @@
+From 39935ee52d9d7ec1cf6d9822bbea7804512eb22e Mon Sep 17 00:00:00 2001
+From: mojyack <mojyack@gmail.com>
+Date: Mon, 24 Aug 2026 08:24:53 +0000
+Subject: [PATCH 3/5] avcodec/vp9: let a hwaccel keep its frame pool across a
+ mid-stream shrink
+
+VP9 can code a frame of another size than the reference it predicts
+from, and update_size() reacts to any dimension change by calling
+ff_get_format().  That is fine for a hwaccel whose references are
+AVFrames, but not for one that names a reference by a buffer in a queue
+it owns: ff_get_format() calls ff_hwaccel_uninit() unconditionally and
+unrefs avctx->hw_frames_ctx, so the pool - and with it every reference
+the next picture is about to scale - is gone before that picture is
+decoded.  A V4L2 request API decoder, which identifies a reference by
+the timestamp of a CAPTURE buffer, cannot decode a resizing stream at
+all.
+
+Whether the frames can hold a picture of the new size depends on the
+device behind the hwaccel, not on the hwaccel alone: some V4L2 stateless
+decoders decode any frame up to the coded format into the buffers
+allocated for it, others require the frame size to match the format.
+Add an optional reuse_frames() callback for the hwaccel to answer for
+the size at hand, and when it does and the software pixel format is
+unchanged, follow the change with ff_set_dimensions() alone.  A picture
+may be smaller or larger than the current one, as long as the hwaccel
+accepts it, e.g. a stream returning to the size the pool was allocated
+for; everything else still renegotiates.
+
+Nothing else needs adjusting: ff_get_buffer() already restores
+frame->width/height from avctx after get_buffer2(), and a hwaccel's
+transfer_data_from() already has to accept a frame smaller than its
+frames context.
+
+Assisted-by: Claude:claude-opus-5
+---
+ libavcodec/hwaccel_internal.h |  4 ++++
+ libavcodec/vp9.c              | 18 ++++++++++++++++++
+ 2 files changed, 22 insertions(+)
+
+diff --git a/libavcodec/hwaccel_internal.h b/libavcodec/hwaccel_internal.h
+index 7224406815..6fcec36dca 100644
+--- a/libavcodec/hwaccel_internal.h
++++ b/libavcodec/hwaccel_internal.h
+@@ -163,6 +163,10 @@ typedef struct FFHWAccel {
+      * Callback to flush the hwaccel state.
+      */
+     void (*flush)(AVCodecContext *avctx);
++
++    /** Optional: 1 if a picture of this size decodes into the current
++     *  hw_frames_ctx, so a size change can keep the frames, else 0. */
++    int (*reuse_frames)(AVCodecContext *avctx, int width, int height);
+ } FFHWAccel;
+ 
+ static inline const FFHWAccel *ffhwaccel(const AVHWAccel *codec)
+diff --git a/libavcodec/vp9.c b/libavcodec/vp9.c
+index b05d20aba6..a6d56f1632 100644
+--- a/libavcodec/vp9.c
++++ b/libavcodec/vp9.c
+@@ -163,6 +163,17 @@ static void vp9_frame_replace(VP9Frame *dst, const VP9Frame *src)
+                           src->hwaccel_picture_private);
+ }
+ 
++static int hwaccel_reuse_frames(AVCodecContext *avctx, int w, int h)
++{
++    const FFHWAccel *hwaccel;
++
++    if (!avctx->hwaccel || !avctx->hw_frames_ctx)
++        return 0;
++
++    hwaccel = ffhwaccel(avctx->hwaccel);
++    return hwaccel->reuse_frames && hwaccel->reuse_frames(avctx, w, h);
++}
++
+ static int update_size(AVCodecContext *avctx, int w, int h)
+ {
+ #define HWACCEL_MAX (CONFIG_VP9_DXVA2_HWACCEL + \
+@@ -189,6 +200,12 @@ static int update_size(AVCodecContext *avctx, int w, int h)
+         if ((ret = ff_set_dimensions(avctx, w, h)) < 0)
+             return ret;
+ 
++        if (s->pix_fmt == s->gf_fmt && hwaccel_reuse_frames(avctx, w, h)) {
++            s->w = w;
++            s->h = h;
++            goto sized;
++        }
++
+         switch (s->pix_fmt) {
+         case AV_PIX_FMT_YUV420P:
+         case AV_PIX_FMT_YUV420P10:
+@@ -278,6 +295,7 @@ static int update_size(AVCodecContext *avctx, int w, int h)
+         s->h = h;
+     }
+ 
++sized:
+     cols = (w + 7) >> 3;
+     rows = (h + 7) >> 3;
+ 
+-- 
+2.56.0
+

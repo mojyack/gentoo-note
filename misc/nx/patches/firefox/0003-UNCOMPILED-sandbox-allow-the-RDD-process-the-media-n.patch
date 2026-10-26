@@ -1,0 +1,91 @@
+From 1952c60950367a4d442006f4363a2a60b1cd3e85 Mon Sep 17 00:00:00 2001
+From: mojyack <mojyack@gmail.com>
+Date: Mon, 24 Aug 2026 08:26:28 +0000
+Subject: [PATCH 3/3] UNCOMPILED: sandbox: allow the RDD process the media node
+ of a V4L2 M2M driver
+
+AddV4l2Dependencies() allows the RDD process every /dev/video* node that
+reports an M2M capability.  That is all a stateful decoder needs.  A
+stateless one is driven through the media controller: requests are
+allocated on the /dev/media* node of the same driver, so without it the
+decoder cannot start at all.
+
+Collect the driver names of the M2M video nodes already allowed and
+allow the media nodes reporting one of them.  Media devices of other
+drivers - a camera pipeline, for one - stay blocked.
+
+NOT COMPILED IN THIS TREE: the local mozconfig has --disable-sandbox, so
+this hunk has never been built or exercised.  Build it with the sandbox
+enabled before posting.
+
+Assisted-by: Claude (claude-opus-5)
+---
+ .../broker/SandboxBrokerPolicyFactory.cpp     | 38 +++++++++++++++++++
+ 1 file changed, 38 insertions(+)
+
+diff --git a/security/sandbox/linux/broker/SandboxBrokerPolicyFactory.cpp b/security/sandbox/linux/broker/SandboxBrokerPolicyFactory.cpp
+index ad29a0509d34..c58ee8aac820 100644
+--- a/security/sandbox/linux/broker/SandboxBrokerPolicyFactory.cpp
++++ b/security/sandbox/linux/broker/SandboxBrokerPolicyFactory.cpp
+@@ -17,6 +17,7 @@
+ #endif
+ #ifdef MOZ_ENABLE_V4L2
+ #  include <fcntl.h>
++#  include <linux/media.h>
+ #  include <linux/videodev2.h>
+ #  include <sys/ioctl.h>
+ #endif  // MOZ_ENABLE_V4L2
+@@ -893,6 +894,10 @@ static void AddV4l2Dependencies(SandboxBroker::Policy* policy) {
+     return;
+   }
+ 
++  // Drivers of the M2M devices we allowed, used to pick the media devices a
++  // stateless decoder needs below.
++  nsTArray<nsCString> m2mDrivers;
++
+   struct dirent* dir_entry;
+   while ((dir_entry = readdir(dir))) {
+     if (strncmp(dir_entry->d_name, "video", 5)) {
+@@ -924,6 +929,39 @@ static void AddV4l2Dependencies(SandboxBroker::Policy* policy) {
+         (cap.device_caps & V4L2_CAP_VIDEO_M2M_MPLANE)) {
+       // This is an M2M device (i.e. not a webcam), so allow access
+       policy->AddPath(rdwr, path.get());
++      nsCString driver(reinterpret_cast<const char*>(cap.driver));
++      if (!m2mDrivers.Contains(driver)) {
++        m2mDrivers.AppendElement(driver);
++      }
++    }
++
++    close(fd);
++  }
++  rewinddir(dir);
++
++  // A stateless decoder is driven through the media controller: requests are
++  // allocated on the /dev/media* node belonging to the same driver as the
++  // video node.  Media devices of other drivers (e.g. a camera pipeline) stay
++  // blocked.
++  while ((dir_entry = readdir(dir))) {
++    if (strncmp(dir_entry->d_name, "media", 5)) {
++      continue;
++    }
++
++    nsCString path = "/dev/"_ns;
++    path += nsDependentCString(dir_entry->d_name);
++
++    int fd = open(path.get(), O_RDWR | O_NONBLOCK, 0);
++    if (fd < 0) {
++      SANDBOX_LOG("Couldn't open media device %s", path.get());
++      continue;
++    }
++
++    struct media_device_info info;
++    if (ioctl(fd, MEDIA_IOC_DEVICE_INFO, &info) < 0) {
++      SANDBOX_LOG("Couldn't query capabilities of media device %s", path.get());
++    } else if (m2mDrivers.Contains(nsCString(info.driver))) {
++      policy->AddPath(rdwr, path.get());
+     }
+ 
+     close(fd);
+-- 
+2.56.0
+

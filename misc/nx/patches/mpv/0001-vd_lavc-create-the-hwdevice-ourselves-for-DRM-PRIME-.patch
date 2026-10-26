@@ -1,0 +1,55 @@
+From f35f603d8ff3a5f767f34188e59b501b823de647 Mon Sep 17 00:00:00 2001
+From: mojyack <mojyack@gmail.com>
+Date: Mon, 24 Aug 2026 08:23:23 +0000
+Subject: [PATCH] vd_lavc: create the hwdevice ourselves for DRM PRIME hwdecs
+
+hwdec_create_dev() creates a device itself only for -copy hwdecs; for a
+zero-copy one it requires a device published by the VO, matched on both
+image format and AVHWDeviceType.  That rule assumes the hwdevice
+describes the rendering device, so sharing the VO's is both possible and
+necessary.
+
+It does not hold for AV_HWDEVICE_TYPE_V4L2REQUEST, whose device is a
+decoder session on a V4L2 stateless video node.  No VO can publish one,
+and none needs to: what the decoder produces is ordinary DRM PRIME,
+which any dmabuf-capable VO imports by image format alone.
+vo_dmabuf_wayland publishes IMGFMT_DRMPRIME with AV_HWDEVICE_TYPE_DRM,
+so the lookup for V4L2REQUEST misses, "Could not create device" is
+logged and playback falls back to software.
+
+Fall back to av_hwdevice_ctx_create() when the hwdec's pixel format is
+AV_PIX_FMT_DRM_PRIME.  Nothing else changes: an hwdec whose device the
+VO does publish - including the existing DRM PRIME ones - is matched and
+returned before this point, and vaapi, vdpau and cuda do not produce
+DRM PRIME at all.
+
+Tested with h264-v4l2request and hevc-v4l2request on a Tegra X1;
+--vo=dmabuf-wayland presents the decoder's exported dma-bufs with no
+hwdownload and no software fallback.
+
+Assisted-by: Claude (claude-opus-5)
+---
+ video/decode/vd_lavc.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/video/decode/vd_lavc.c b/video/decode/vd_lavc.c
+index ae199c6..cd57ea1 100644
+--- a/video/decode/vd_lavc.c
++++ b/video/decode/vd_lavc.c
+@@ -495,6 +495,13 @@ static AVBufferRef *hwdec_create_dev(struct mp_filter *vd,
+             return av_buffer_ref(hw_ctx->av_device_ref);
+     }
+ 
++    if (hwdec->pix_fmt == AV_PIX_FMT_DRM_PRIME) {
++        AVBufferRef *ref = NULL;
++
++        if (av_hwdevice_ctx_create(&ref, hwdec->lavc_device, NULL, NULL, 0) >= 0)
++            return ref;
++    }
++
+     return NULL;
+ }
+ 
+-- 
+2.56.0
+
